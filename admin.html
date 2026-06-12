@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07140f">
+  <title>Bolão Dos Chofer | Administração</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="index.html"><span class="brand-mark">BD</span> Bolão Dos Chofer</a>
+      <div class="nav-links">
+        <a href="index.html">Palpites</a>
+        <a href="ranking.html">Ranking</a>
+        <a class="active" href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section>
+      <p class="eyebrow">Área do organizador</p>
+      <h1>Painel admin</h1>
+      <p class="lead">Cadastre partidas e publique resultados. Toda alteração é validada pelo PIN no Apps Script.</p>
+    </section>
+
+    <section class="card pin-card">
+      <div class="form-group">
+        <label for="adminPin">PIN do administrador</label>
+        <input id="adminPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Digite o PIN">
+      </div>
+      <p class="muted">O PIN é enviado apenas no momento da operação e não fica salvo no navegador.</p>
+    </section>
+
+    <div class="admin-grid">
+      <section class="card">
+        <h2>Cadastrar jogo</h2>
+        <form id="matchForm" novalidate>
+          <div class="form-group"><label for="phase">Fase</label><input id="phase" maxlength="60" placeholder="Ex.: Fase de grupos" required></div>
+          <div class="form-group"><label for="teamA">Time A</label><input id="teamA" maxlength="60" placeholder="Ex.: Brasil" required></div>
+          <div class="form-group"><label for="teamB">Time B</label><input id="teamB" maxlength="60" placeholder="Ex.: Japão" required></div>
+          <div class="form-group"><label for="matchDate">Data e hora</label><input id="matchDate" type="datetime-local" required></div>
+          <button class="button" id="addMatchButton" type="submit">Cadastrar Jogo</button>
+          <p class="status-line" id="matchStatus" role="status"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Lançar resultado</h2>
+        <form id="resultForm" novalidate>
+          <div class="form-group">
+            <label for="resultMatchId">Escolha o jogo</label>
+            <select id="resultMatchId" required><option value="">Carregando jogos...</option></select>
+          </div>
+          <div class="score-inputs">
+            <div><label id="resultLabelA" for="resultA">Time A</label><input id="resultA" type="number" min="0" max="99" step="1" inputmode="numeric" required></div>
+            <span class="score-x">x</span>
+            <div><label id="resultLabelB" for="resultB">Time B</label><input id="resultB" type="number" min="0" max="99" step="1" inputmode="numeric" required></div>
+          </div>
+          <div style="height: 22px"></div>
+          <button class="button" id="setResultButton" type="submit">Publicar Resultado</button>
+          <p class="status-line" id="resultStatus" role="status"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">Bolão Dos Chofer · Administração protegida por PIN</footer>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

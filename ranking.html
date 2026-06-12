@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07140f">
+  <title>Bolão Dos Chofer | Ranking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="index.html"><span class="brand-mark">BD</span> Bolão Dos Chofer</a>
+      <div class="nav-links">
+        <a href="index.html">Palpites</a>
+        <a class="active" href="ranking.html">Ranking</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Classificação geral</p>
+        <h1>Quem entende de bola?</h1>
+        <p class="lead">Ranking recalculado depois de cada resultado e atualizado nesta tela a cada 15 segundos.</p>
+      </div>
+      <div class="hero-score">
+        <div><strong id="participantCount">0</strong><span>participantes</span></div>
+      </div>
+    </section>
+
+    <div class="section-heading">
+      <h2>Ranking</h2>
+      <p id="refreshStatus" class="muted">Carregando...</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Exatos</th><th>Resultados certos</th><th>Palpites</th></tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr><td colspan="6" class="empty-state">Carregando ranking...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Transparência</p>
+        <h2>Todos os palpites</h2>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Participante</th><th>Jogo</th><th>Palpite</th><th>Resultado</th><th>Pontos</th></tr>
+        </thead>
+        <tbody id="guessesBody">
+          <tr><td colspan="5" class="empty-state">Carregando palpites...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="footer">Bolão Dos Chofer · Atualização automática</footer>
+  <script src="config.js"></script>
+  <script src="ranking.js"></script>
+</body>
+</html>

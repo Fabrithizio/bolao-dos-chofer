@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07140f">
+  <title>Bolão Dos Chofer | Palpites</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="index.html"><span class="brand-mark">BD</span> Bolão Dos Chofer</a>
+      <div class="nav-links">
+        <a class="active" href="index.html">Palpites</a>
+        <a href="ranking.html">Ranking</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Copa 2026</p>
+        <h1>Seu palpite entra em campo aqui.</h1>
+        <p class="lead">Escolha o jogo, marque o placar e pronto. Os palpites fecham automaticamente no horário de cada partida.</p>
+      </div>
+      <div class="hero-score">
+        <div><strong>5</strong><span>pontos no placar exato</span></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card span-7">
+        <h2>Registrar palpite</h2>
+        <form id="guessForm" novalidate>
+          <div class="form-group">
+            <label for="name">Seu nome</label>
+            <input id="name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="Ex.: João Silva" required>
+          </div>
+          <div class="form-group">
+            <label for="matchId">Escolha o jogo</label>
+            <select id="matchId" name="matchId" required>
+              <option value="">Carregando jogos...</option>
+            </select>
+          </div>
+          <div class="score-inputs">
+            <div>
+              <label id="labelTeamA" for="guessA">Time A</label>
+              <input id="guessA" name="guessA" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="0" required>
+            </div>
+            <span class="score-x">x</span>
+            <div>
+              <label id="labelTeamB" for="guessB">Time B</label>
+              <input id="guessB" name="guessB" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="0" required>
+            </div>
+          </div>
+          <div style="height: 22px"></div>
+          <button class="button" id="submitButton" type="submit">Registrar Palpite</button>
+          <p class="status-line" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <aside class="card span-5">
+        <h2>Regras de pontuação</h2>
+        <div class="rules">
+          <div class="rule"><span>Placar exato</span><strong>5 pontos</strong></div>
+          <div class="rule"><span>Acertou vencedor/empate e errou 1 gol no total</span><strong>3 pontos</strong></div>
+          <div class="rule"><span>Acertou vencedor/empate e errou 2 gols no total</span><strong>2 pontos</strong></div>
+          <div class="rule"><span>Acertou vencedor/empate e errou 3 gols no total</span><strong>1 ponto</strong></div>
+          <div class="rule"><span>Errou vencedor/empate ou mais de 3 gols</span><strong>0 pontos</strong></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Agenda</p>
+        <h2>Jogos abertos</h2>
+      </div>
+      <p class="muted">Horários de Recife/Fortaleza</p>
+    </div>
+    <section id="openMatches" class="match-list" aria-live="polite">
+      <div class="empty-state">Carregando partidas...</div>
+    </section>
+  </main>
+
+  <footer class="footer">Bolão Dos Chofer · Feito para a resenha da turma</footer>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
