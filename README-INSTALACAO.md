@@ -26,7 +26,7 @@ const API_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
 pela URL copiada, mantendo as aspas.
 
-Ao primeiro acesso, as abas `Jogos` e `Palpites` serão criadas automaticamente.
+Ao primeiro acesso, as abas `Boloes`, `Inscricoes`, `Jogos` e `Palpites` serão criadas automaticamente. Se as abas antigas já existirem, as novas colunas serão acrescentadas sem apagar dados.
 
 ## 2. Testar no computador
 
@@ -72,6 +72,21 @@ Quando alterar `apps-script.gs`, cole a nova versão no editor e crie uma implan
 4. Clique em **Implantar**.
 
 Usando a mesma implantação, a URL `/exec` continua igual.
+
+### Atualização obrigatória desta versão
+
+Depois de receber uma atualização do projeto:
+
+1. Abra `apps-script.gs` no computador.
+2. Copie todo o conteúdo.
+3. Substitua todo o código no Google Apps Script.
+4. Salve.
+5. Vá em **Implantar > Gerenciar implantações**.
+6. Clique no lápis da implantação ativa.
+7. Em **Versão**, escolha **Nova versão**.
+8. Clique em **Implantar**.
+
+Sem publicar a nova versão, o site novo continuará conversando com a API antiga.
 
 ## Segurança
 

@@ -209,6 +209,14 @@ h2 {
   margin-bottom: 20px;
 }
 
+.form-group small,
+.participant-row small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 label {
   display: block;
   margin-bottom: 8px;
@@ -292,6 +300,117 @@ select:focus {
   color: var(--text);
   background: rgba(255, 255, 255, 0.1);
   box-shadow: none;
+}
+
+.section-gap {
+  margin-top: 24px;
+}
+
+.spacer {
+  height: 22px;
+}
+
+.two-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pool-selector {
+  margin-bottom: 24px;
+}
+
+.pool-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pool-summary div {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.pool-summary span,
+.pool-summary strong {
+  display: block;
+}
+
+.pool-summary span {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pool-summary strong {
+  color: var(--gold);
+}
+
+.notice {
+  margin-bottom: 20px;
+  padding: 15px;
+  color: var(--text);
+  border: 1px solid rgba(244, 201, 93, 0.25);
+  border-radius: 14px;
+  background: rgba(244, 201, 93, 0.08);
+  line-height: 1.55;
+}
+
+.participant-list {
+  display: grid;
+  gap: 10px;
+}
+
+.participant-row {
+  min-height: 54px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pill.neutral {
+  color: #d7dde8;
+  background: rgba(215, 221, 232, 0.1);
+}
+
+.pill.danger {
+  color: var(--danger);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.mini-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+}
+
+.mini-button.confirm {
+  color: var(--green);
+}
+
+.mini-button.reject {
+  color: var(--danger);
+}
+
+.action-row {
+  display: flex;
+  gap: 7px;
+}
+
+.disabled-form {
+  opacity: 0.7;
 }
 
 .rules {
@@ -483,6 +602,10 @@ tbody tr:hover {
   .admin-grid {
     grid-template-columns: 1fr;
   }
+
+  .pool-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
@@ -513,6 +636,16 @@ tbody tr:hover {
   }
 
   .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .two-fields,
+  .pool-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .participant-row {
     align-items: flex-start;
     flex-direction: column;
   }

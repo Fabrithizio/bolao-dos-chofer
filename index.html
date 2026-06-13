@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07140f">
-  <title>Bolão Dos Chofer | Palpites</title>
+  <title>Bolão Dos Chofer | Inscrição e palpites</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <nav class="nav">
       <a class="brand" href="index.html"><span class="brand-mark">BD</span> Bolão Dos Chofer</a>
       <div class="nav-links">
-        <a class="active" href="index.html">Palpites</a>
+        <a class="active" href="index.html">Participar</a>
         <a href="ranking.html">Ranking</a>
         <a href="admin.html">Admin</a>
       </div>
@@ -23,70 +23,104 @@
     <section class="hero">
       <div>
         <p class="eyebrow">Copa 2026</p>
-        <h1>Seu palpite entra em campo aqui.</h1>
-        <p class="lead">Escolha o jogo, marque o placar e pronto. Os palpites fecham automaticamente no horário de cada partida.</p>
+        <h1>Bolões por fase, prêmio sem confusão.</h1>
+        <p class="lead">Entre no bolão da fase atual, escolha competir pelo prêmio ou jogar por diversão e envie seus palpites.</p>
       </div>
-      <div class="hero-score">
-        <div><strong>5</strong><span>pontos no placar exato</span></div>
-      </div>
+      <div class="hero-score"><div><strong id="heroPrize">R$ 0</strong><span>prêmio do bolão selecionado</span></div></div>
     </section>
 
-    <div class="grid">
-      <section class="card span-7">
-        <h2>Registrar palpite</h2>
-        <form id="guessForm" novalidate>
+    <section class="card pool-selector">
+      <div class="form-group">
+        <label for="poolId">Escolha o bolão</label>
+        <select id="poolId"><option value="">Carregando bolões...</option></select>
+      </div>
+      <div id="poolSummary" class="pool-summary"></div>
+    </section>
+
+    <div class="grid section-gap">
+      <section class="card span-5">
+        <p class="eyebrow">Primeiro acesso</p>
+        <h2>Inscrever-se</h2>
+        <form id="registrationForm" novalidate>
           <div class="form-group">
-            <label for="name">Seu nome</label>
-            <input id="name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="Ex.: João Silva" required>
+            <label for="registrationName">Nome completo</label>
+            <input id="registrationName" maxlength="100" autocomplete="name" placeholder="Igual ao nome do PIX" required>
+            <small>Para participar do prêmio, use exatamente o nome que aparece no comprovante PIX.</small>
           </div>
           <div class="form-group">
-            <label for="matchId">Escolha o jogo</label>
-            <select id="matchId" name="matchId" required>
-              <option value="">Carregando jogos...</option>
+            <label for="registrationPin">Crie seu PIN pessoal</label>
+            <input id="registrationPin" type="password" inputmode="numeric" minlength="4" maxlength="8" placeholder="4 a 8 números" required>
+            <small>Guarde este PIN. Ele impede que outra pessoa envie palpites usando seu nome.</small>
+          </div>
+          <div class="form-group">
+            <label for="mode">Como quer participar?</label>
+            <select id="mode">
+              <option value="PAGO">Competir pelo prêmio</option>
+              <option value="DIVERSAO">Só por diversão</option>
             </select>
           </div>
-          <div class="score-inputs">
-            <div>
-              <label id="labelTeamA" for="guessA">Time A</label>
-              <input id="guessA" name="guessA" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="0" required>
-            </div>
-            <span class="score-x">x</span>
-            <div>
-              <label id="labelTeamB" for="guessB">Time B</label>
-              <input id="guessB" name="guessB" type="number" min="0" max="99" step="1" inputmode="numeric" placeholder="0" required>
-            </div>
+          <div class="form-group" id="pixNameGroup">
+            <label for="pixName">Nome no comprovante PIX</label>
+            <input id="pixName" maxlength="100" placeholder="Deve ser igual ao nome completo">
           </div>
-          <div style="height: 22px"></div>
-          <button class="button" id="submitButton" type="submit">Registrar Palpite</button>
-          <p class="status-line" id="formStatus" role="status" aria-live="polite"></p>
+          <div id="pixInstructions" class="notice"></div>
+          <button class="button" id="registerButton" type="submit">Fazer inscrição</button>
+          <p class="status-line" id="registrationStatus" role="status"></p>
         </form>
       </section>
 
+      <section class="card span-7">
+        <p class="eyebrow">Já inscrito</p>
+        <h2>Registrar palpite</h2>
+        <form id="guessForm" novalidate>
+          <div class="two-fields">
+            <div class="form-group">
+              <label for="name">Seu nome completo</label>
+              <input id="name" maxlength="100" autocomplete="name" required>
+            </div>
+            <div class="form-group">
+              <label for="participantPin">Seu PIN pessoal</label>
+              <input id="participantPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="matchId">Escolha o jogo</label>
+            <select id="matchId" required><option value="">Carregando jogos...</option></select>
+          </div>
+          <div class="score-inputs">
+            <div><label id="labelTeamA" for="guessA">Time A</label><input id="guessA" type="number" min="0" max="99" step="1" inputmode="numeric" required></div>
+            <span class="score-x">x</span>
+            <div><label id="labelTeamB" for="guessB">Time B</label><input id="guessB" type="number" min="0" max="99" step="1" inputmode="numeric" required></div>
+          </div>
+          <div class="spacer"></div>
+          <button class="button" id="submitButton" type="submit">Registrar Palpite</button>
+          <p class="status-line" id="formStatus" role="status"></p>
+        </form>
+      </section>
+    </div>
+
+    <div class="grid section-gap">
       <aside class="card span-5">
         <h2>Regras de pontuação</h2>
         <div class="rules">
           <div class="rule"><span>Placar exato</span><strong>5 pontos</strong></div>
-          <div class="rule"><span>Acertou vencedor/empate e errou 1 gol no total</span><strong>3 pontos</strong></div>
-          <div class="rule"><span>Acertou vencedor/empate e errou 2 gols no total</span><strong>2 pontos</strong></div>
-          <div class="rule"><span>Acertou vencedor/empate e errou 3 gols no total</span><strong>1 ponto</strong></div>
-          <div class="rule"><span>Errou vencedor/empate ou mais de 3 gols</span><strong>0 pontos</strong></div>
+          <div class="rule"><span>Resultado certo e erro total de 1 gol</span><strong>3 pontos</strong></div>
+          <div class="rule"><span>Resultado certo e erro total de 2 gols</span><strong>2 pontos</strong></div>
+          <div class="rule"><span>Resultado certo e erro total de 3 gols</span><strong>1 ponto</strong></div>
+          <div class="rule"><span>Resultado errado ou erro maior</span><strong>0 pontos</strong></div>
         </div>
       </aside>
+      <section class="card span-7">
+        <h2>Participantes</h2>
+        <div id="participantList" class="participant-list"><div class="empty-state">Carregando...</div></div>
+      </section>
     </div>
 
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Agenda</p>
-        <h2>Jogos abertos</h2>
-      </div>
-      <p class="muted">Horários de Recife/Fortaleza</p>
-    </div>
-    <section id="openMatches" class="match-list" aria-live="polite">
-      <div class="empty-state">Carregando partidas...</div>
-    </section>
+    <div class="section-heading"><div><p class="eyebrow">Agenda</p><h2>Jogos deste bolão</h2></div><p class="muted">Horários de Recife/Fortaleza</p></div>
+    <section id="openMatches" class="match-list"><div class="empty-state">Carregando partidas...</div></section>
   </main>
 
-  <footer class="footer">Bolão Dos Chofer · Feito para a resenha da turma</footer>
+  <footer class="footer">Bolão Dos Chofer · Organização, transparência e resenha</footer>
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
