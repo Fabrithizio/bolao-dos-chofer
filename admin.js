@@ -48,13 +48,15 @@ function render() {
   const poolMap = Object.fromEntries(state.pools.map((pool) => [pool.id, pool.name]));
   $("#paymentBody").innerHTML = state.registrations.length ? state.registrations.map((item) => `<tr>
     <td>${escapeHtml(poolMap[item.poolId] || "Bolão")}</td><td><strong>${escapeHtml(item.name)}</strong></td>
-    <td>${escapeHtml(item.pixName)}</td><td>${escapeHtml(item.paymentStatus)}</td>
+    <td>${escapeHtml(item.pixName)}</td><td>${escapeHtml(item.registrationStatus)}</td><td>${escapeHtml(item.paymentStatus)}</td>
     <td><div class="action-row">
+      <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar</button>
+      <button class="mini-button reject" data-registration="${escapeHtml(item.id)}" data-registration-status="BLOQUEADO">Bloquear</button>
       ${item.mode === "PAGO" ? `
-        <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar</button>
-        <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar</button>` : ""}
+        <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar PIX</button>
+        <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}
       <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
-    </div></td></tr>`).join("") : `<tr><td colspan="5" class="empty-state">Nenhuma inscrição.</td></tr>`;
+    </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição.</td></tr>`;
   updateResultLabels();
 }
 function updateResultLabels() {
@@ -100,6 +102,7 @@ document.addEventListener("click", async (event) => {
   const paymentButton = event.target.closest("[data-payment]");
   const poolButton = event.target.closest("[data-pool-status]");
   const resetPinButton = event.target.closest("[data-reset-pin]");
+  const registrationButton = event.target.closest("[data-registration]");
   try {
     if (paymentButton) {
       await apiPost({ action: "confirmPayment", pin: pin(), registrationId: paymentButton.dataset.payment, status: paymentButton.dataset.status });
@@ -114,6 +117,14 @@ document.addEventListener("click", async (event) => {
       if (newPin === null) return;
       await apiPost({ action: "resetParticipantPin", pin: pin(), registrationId: resetPinButton.dataset.resetPin, newPin });
       setStatus($("#adminStatus"), "PIN pessoal redefinido.", "success");
+    }
+    if (registrationButton) {
+      await apiPost({
+        action: "setRegistrationStatus", pin: pin(),
+        registrationId: registrationButton.dataset.registration,
+        status: registrationButton.dataset.registrationStatus
+      });
+      await loadAdmin();
     }
   } catch (error) { setStatus($("#adminStatus"), error.message, "error"); }
 });

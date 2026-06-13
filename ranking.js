@@ -19,6 +19,8 @@ async function apiGet(poolId = "") {
 }
 
 function badge(item) {
+  if (item.registrationStatus === "BLOQUEADO") return `<span class="pill danger">Bloqueado</span>`;
+  if (item.registrationStatus !== "APROVADO") return `<span class="pill waiting">Em análise</span>`;
   if (item.mode === "DIVERSAO") return `<span class="pill neutral">Só diversão</span>`;
   if (item.paymentStatus === "CONFIRMADO") return `<span class="pill">PIX confirmado</span>`;
   if (item.paymentStatus === "RECUSADO") return `<span class="pill danger">Recusado</span>`;

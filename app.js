@@ -98,6 +98,7 @@ function renderPool() {
 }
 
 function statusBadge(item) {
+  if (item.registrationStatus !== "APROVADO") return "";
   if (item.mode === "DIVERSAO") return `<span class="pill neutral">Só diversão</span>`;
   if (item.paymentStatus === "CONFIRMADO") return `<span class="pill">PIX confirmado</span>`;
   if (item.paymentStatus === "RECUSADO") return `<span class="pill danger">Pagamento recusado</span>`;

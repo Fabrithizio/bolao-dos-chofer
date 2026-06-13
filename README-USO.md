@@ -38,6 +38,8 @@ O PIN pessoal tem de 4 a 8 números. Ele serve somente para impedir que outra pe
 
 Uma inscrição com PIX pendente pode palpitar para não perder o horário do jogo, mas só entra no ranking do prêmio depois da confirmação.
 
+Inscrições novas ficam ocultas do público enquanto aguardam análise. Os palpites ficam guardados, mas também permanecem ocultos. Quando o organizador aprova ou confirma o PIX, o participante e seus palpites aparecem normalmente.
+
 ## Confirmar um PIX
 
 1. Confira no aplicativo do banco o nome do pagador e o valor.
@@ -47,6 +49,16 @@ Uma inscrição com PIX pendente pode palpitar para não perder o horário do jo
 5. Use **Recusar** quando o pagamento não for localizado ou estiver incorreto.
 
 O site mostra apenas o nome e a situação do pagamento. Não mostra chave PIX do participante, dados bancários ou comprovantes.
+
+A confirmação administrativa pode ser feita depois do prazo de inscrição. O importante é que a pessoa tenha se inscrito e enviado o pagamento dentro do prazo. O prazo impede novas inscrições, mas não impede o organizador de concluir a conferência depois.
+
+## Aprovar ou bloquear inscrições
+
+- **Aprovar:** libera a pessoa e seus palpites nas áreas públicas.
+- **Bloquear:** impede novos palpites e mantém tudo oculto, preservando o registro para conferência.
+- **Confirmar PIX:** confirma o pagamento e aprova automaticamente a inscrição paga.
+
+Bloquear é mais seguro do que apagar, pois mantém o histórico em caso de dúvida ou discussão.
 
 ## Cadastrar jogos
 
