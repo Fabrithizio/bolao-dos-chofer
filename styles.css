@@ -320,6 +320,49 @@ select:focus {
   margin-bottom: 24px;
 }
 
+.whatsapp-card {
+  margin-bottom: 24px;
+  padding: clamp(20px, 4vw, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid rgba(50, 213, 131, 0.28);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.14), rgba(16, 42, 30, 0.82));
+  box-shadow: var(--shadow);
+}
+
+.whatsapp-card h2,
+.whatsapp-card p:last-child {
+  margin-bottom: 0;
+}
+
+.whatsapp-card p:last-child {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.whatsapp-button {
+  min-width: 180px;
+  min-height: 52px;
+  padding: 14px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #04120a;
+  border-radius: 14px;
+  background: #25d366;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.whatsapp-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
 .pool-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -648,5 +691,14 @@ tbody tr:hover {
   .participant-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .whatsapp-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .whatsapp-button {
+    width: 100%;
   }
 }
