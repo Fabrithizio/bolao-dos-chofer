@@ -23,7 +23,19 @@ O ranking do prêmio inclui somente quem teve o PIX confirmado pelo organizador.
 3. Preencha nome, fase, valor, prazo, chave PIX e titular.
 4. Clique em **Criar Bolão**.
 
-O prazo deve terminar antes do primeiro jogo. Depois dele, novas inscrições são recusadas automaticamente.
+Depois do prazo escolhido, novas inscrições são recusadas automaticamente. Em bolões pagos, esse prazo deve ser anterior ao primeiro jogo; em gratuitos, pode ficar aberto durante a fase.
+
+### Diferença entre gratuito e pago
+
+- **Bolão gratuito:** pode aceitar novos participantes durante a fase. Quem entrar mais tarde começa com zero e só consegue palpitar nos jogos que ainda não começaram.
+- **Bolão pago:** o prazo precisa terminar antes do primeiro jogo incluído, para todos começarem em igualdade.
+
+Você pode criar quantos bolões quiser. Por exemplo:
+
+- `Aquecimento - Fase de Grupos`, gratuito até 27/06/2026;
+- `Fase de Grupos a partir de 20/06`, contendo somente jogos futuros;
+- `Bolão das Oitavas`, pago e com ranking zerado;
+- `Bolão das Quartas`, com novo valor e novo prêmio.
 
 ## Inscrição do participante
 

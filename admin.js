@@ -58,6 +58,17 @@ function render() {
       <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
     </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição.</td></tr>`;
   updateResultLabels();
+  updateMatchRuleNotice();
+}
+function updateMatchRuleNotice() {
+  const pool = state.pools.find((item) => item.id === $("#matchPoolId").value);
+  if (!pool) {
+    $("#matchRuleNotice").textContent = "Crie um bolão antes de cadastrar jogos.";
+    return;
+  }
+  $("#matchRuleNotice").textContent = pool.fee > 0
+    ? "Bolão pago: todos os jogos precisam começar depois do prazo final de inscrição."
+    : "Bolão gratuito: novos participantes podem entrar até o prazo e palpitar apenas nos jogos que ainda não começaram.";
 }
 function updateResultLabels() {
   const match = state.matches.find((item) => item.id === $("#resultMatchId").value);
@@ -65,6 +76,7 @@ function updateResultLabels() {
 }
 $("#loadAdminButton").addEventListener("click", loadAdmin);
 $("#resultMatchId").addEventListener("change", updateResultLabels);
+$("#matchPoolId").addEventListener("change", updateMatchRuleNotice);
 $("#poolForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   try {

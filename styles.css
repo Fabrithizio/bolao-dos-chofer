@@ -401,6 +401,11 @@ select:focus {
   line-height: 1.55;
 }
 
+.compact-notice {
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+
 .participant-list {
   display: grid;
   gap: 10px;
