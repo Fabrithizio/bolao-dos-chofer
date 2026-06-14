@@ -19,6 +19,15 @@
     </section>
 
     <div id="adminContent" hidden>
+      <section class="card admin-pool-selector">
+        <div class="form-group">
+          <label for="adminPoolFilter">Administrando o bolão</label>
+          <select id="adminPoolFilter"></select>
+          <small>Jogos, resultados, inscrições, pagamentos e backup abaixo pertencem somente ao bolão selecionado.</small>
+        </div>
+        <button class="button secondary refresh-admin-button" id="refreshAdminButton" type="button">Atualizar dados</button>
+      </section>
+
       <div class="admin-grid">
         <section class="card">
           <h2 id="poolFormTitle">Criar novo bolão</h2>
@@ -88,6 +97,7 @@
       </section>
 
       <div class="section-heading"><div><p class="eyebrow">Conferência e suporte</p><h2>Inscrições e pagamentos</h2></div></div>
+      <div class="filter-bar"><label for="adminParticipantFilter">Localizar participante</label><input id="adminParticipantFilter" type="search" placeholder="Digite o nome"></div>
       <div class="table-wrap"><table><thead><tr><th>Bolão</th><th>Nome da inscrição</th><th>Nome no PIX</th><th>Cadastro</th><th>Pagamento</th><th>Ação</th></tr></thead><tbody id="paymentBody"></tbody></table></div>
     </div>
   </main>

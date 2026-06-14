@@ -1,5 +1,6 @@
 "use strict";
 const state = { pools: [], matches: [], registrations: [], teams: [], guesses: [], audit: [] };
+let activePoolId = "";
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -37,9 +38,18 @@ async function loadAdmin() {
   } catch (error) { setStatus($("#adminStatus"), error.message, "error"); }
 }
 function render() {
+  const previousPool = activePoolId || $("#adminPoolFilter").value;
   const poolOptions = state.pools.map((pool) => `<option value="${escapeHtml(pool.id)}">${escapeHtml(pool.name)}</option>`).join("");
+  $("#adminPoolFilter").innerHTML = poolOptions || `<option value="">Crie um bolão primeiro</option>`;
+  activePoolId = state.pools.some((pool) => pool.id === previousPool) ? previousPool : (state.pools[0]?.id || "");
+  $("#adminPoolFilter").value = activePoolId;
   $("#matchPoolId").innerHTML = poolOptions || `<option value="">Crie um bolão primeiro</option>`;
-  $("#resultMatchId").innerHTML = state.matches.map((match) =>
+  if (!$("#editingMatchId").value && activePoolId) $("#matchPoolId").value = activePoolId;
+
+  const filteredMatches = state.matches.filter((match) => match.poolId === activePoolId);
+  const filteredRegistrations = state.registrations.filter((item) => item.poolId === activePoolId);
+  const resultMatches = filteredMatches.filter((match) => !match.hasResult && match.status === "ATIVO");
+  $("#resultMatchId").innerHTML = resultMatches.map((match) =>
     `<option value="${escapeHtml(match.id)}">${escapeHtml(match.timeA)} x ${escapeHtml(match.timeB)} · ${formatDate(match.dataHora)}</option>`
   ).join("") || `<option value="">Nenhum jogo</option>`;
   $("#poolAdminList").innerHTML = state.pools.length ? state.pools.map((pool) => `<div class="participant-row">
@@ -51,7 +61,7 @@ function render() {
   </div>`).join("") : `<div class="empty-state">Nenhum bolão.</div>`;
 
   $("#knownTeams").innerHTML = state.teams.map((team) => `<option value="${escapeHtml(team)}"></option>`).join("");
-  $("#matchAdminList").innerHTML = state.matches.length ? state.matches.map((match) => `<article class="match-card">
+  $("#matchAdminList").innerHTML = filteredMatches.length ? filteredMatches.map((match) => `<article class="match-card">
     <span class="phase">${escapeHtml(match.fase)}</span>
     <div class="teams"><strong>${escapeHtml(match.timeA)}</strong><span>VS</span><strong>${escapeHtml(match.timeB)}</strong></div>
     <div class="match-card-footer"><span class="match-time">${formatDate(match.dataHora)}${match.hasResult ? ` · ${match.resultA} x ${match.resultB}` : match.status === "CANCELADO" ? " · CANCELADO" : ""}</span>
@@ -59,23 +69,49 @@ function render() {
     ${!match.hasResult ? `<button class="mini-button ${match.status === "CANCELADO" ? "confirm" : "reject"}" data-match-status="${escapeHtml(match.id)}" data-next-match-status="${match.status === "CANCELADO" ? "ATIVO" : "CANCELADO"}">${match.status === "CANCELADO" ? "Reativar" : "Cancelar jogo"}</button>` : ""}</div></div>
   </article>`).join("") : `<div class="empty-state">Nenhum jogo cadastrado.</div>`;
 
-  const poolMap = Object.fromEntries(state.pools.map((pool) => [pool.id, pool.name]));
-  $("#paymentBody").innerHTML = state.registrations.length ? state.registrations.map((item) => `<tr>
-    <td>${escapeHtml(poolMap[item.poolId] || "Bolão")}</td><td><strong>${escapeHtml(item.name)}</strong></td>
-    <td>${escapeHtml(item.pixName)}</td><td>${escapeHtml(item.registrationStatus)}</td><td>${escapeHtml(item.paymentStatus)}</td>
-    <td><div class="action-row">
-      <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar</button>
-      <button class="mini-button reject" data-registration="${escapeHtml(item.id)}" data-registration-status="BLOQUEADO">Bloquear</button>
-      ${item.mode === "PAGO" ? `
-        <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar PIX</button>
-        <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}
-      <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
-    </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição.</td></tr>`;
+  renderPayments(filteredRegistrations);
   $("#auditList").innerHTML = state.audit.length ? state.audit.slice(0, 50).map((item) => `<div class="audit-row">
     <span>${formatDate(item.dateTime)}</span><strong>${escapeHtml(item.action)}</strong><small>${escapeHtml(item.details)}</small>
   </div>`).join("") : `<div class="empty-state">Nenhuma ação registrada.</div>`;
   updateResultLabels();
   updateMatchRuleNotice();
+}
+function normalizeSearch(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+function renderPayments(registrations = state.registrations.filter((item) => item.poolId === activePoolId)) {
+  const poolMap = Object.fromEntries(state.pools.map((pool) => [pool.id, pool.name]));
+  const search = normalizeSearch($("#adminParticipantFilter").value);
+  const filtered = registrations.filter((item) =>
+    !search || normalizeSearch(item.name).includes(search) || normalizeSearch(item.pixName).includes(search)
+  );
+  $("#paymentBody").innerHTML = filtered.length ? filtered.map((item) => `<tr>
+    <td>${escapeHtml(poolMap[item.poolId] || "Bolão")}</td><td><strong>${escapeHtml(item.name)}</strong></td>
+    <td>${escapeHtml(item.pixName)}</td><td>${registrationLabel(item)}</td><td>${paymentLabel(item.paymentStatus)}</td>
+    <td><div class="action-row">
+      ${item.registrationStatus === "BLOQUEADO" ? `
+        <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="PENDENTE">Reabrir análise</button>` : `
+      ${item.mode === "DIVERSAO" ? `<button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar participação</button>` : ""}
+      <button class="mini-button reject" data-registration="${escapeHtml(item.id)}" data-registration-status="BLOQUEADO">Bloquear</button>
+      ${item.mode === "PAGO" ? `
+        <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar PIX recebido</button>
+        <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}`}
+      <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
+    </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição encontrada.</td></tr>`;
+}
+function paymentLabel(status) {
+  if (status === "CONFIRMADO") return `<span class="pill">Confirmado</span>`;
+  if (status === "PIX_ENVIADO") return `<span class="pill waiting">Participante informou PIX</span>`;
+  if (status === "RECUSADO") return `<span class="pill danger">Não localizado</span>`;
+  if (status === "DIVERSAO") return `<span class="pill neutral">Só diversão</span>`;
+  return `<span class="pill waiting">Ainda não informou PIX</span>`;
+}
+function registrationLabel(item) {
+  if (item.registrationStatus === "BLOQUEADO") return `<span class="pill danger">Bloqueado</span>`;
+  if (item.registrationStatus === "APROVADO") {
+    return item.mode === "PAGO" ? `<span class="pill">Valendo prêmio</span>` : `<span class="pill">Aprovado</span>`;
+  }
+  return `<span class="pill waiting">Em análise</span>`;
 }
 function updateMatchRuleNotice() {
   const pool = state.pools.find((item) => item.id === $("#matchPoolId").value);
@@ -127,8 +163,15 @@ function resetMatchForm() {
   $("#cancelMatchEdit").hidden = true; updateMatchRuleNotice();
 }
 $("#loadAdminButton").addEventListener("click", loadAdmin);
+$("#refreshAdminButton").addEventListener("click", loadAdmin);
+$("#adminParticipantFilter").addEventListener("input", () => renderPayments());
 $("#resultMatchId").addEventListener("change", updateResultLabels);
 $("#matchPoolId").addEventListener("change", updateMatchRuleNotice);
+$("#adminPoolFilter").addEventListener("change", () => {
+  activePoolId = $("#adminPoolFilter").value;
+  resetMatchForm();
+  render();
+});
 $("#cancelPoolEdit").addEventListener("click", resetPoolForm);
 $("#cancelMatchEdit").addEventListener("click", resetMatchForm);
 $("#backupButton").addEventListener("click", downloadBackup);
@@ -136,15 +179,19 @@ function csvCell(value) {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
 function downloadBackup() {
+  const pool = state.pools.find((item) => item.id === activePoolId);
+  const registrations = state.registrations.filter((item) => item.poolId === activePoolId);
+  const matches = state.matches.filter((item) => item.poolId === activePoolId);
+  const guesses = state.guesses.filter((item) => item.poolId === activePoolId);
   const rows = [["tipo", "id", "bolao", "nome", "detalhe1", "detalhe2", "status"]];
-  state.pools.forEach((item) => rows.push(["BOLAO", item.id, item.name, item.phase, item.fee, item.deadline, item.status]));
-  state.registrations.forEach((item) => rows.push(["INSCRICAO", item.id, item.poolId, item.name, item.pixName, item.mode, `${item.registrationStatus}/${item.paymentStatus}`]));
-  state.matches.forEach((item) => rows.push(["JOGO", item.id, item.poolId, `${item.timeA} x ${item.timeB}`, item.dataHora, item.hasResult ? `${item.resultA} x ${item.resultB}` : "", item.status]));
-  state.guesses.forEach((item) => rows.push(["PALPITE", item.id, item.poolId, item.name, `${item.timeA} x ${item.timeB}`, `${item.guessA} x ${item.guessB}`, ""]));
+  if (pool) rows.push(["BOLAO", pool.id, pool.name, pool.phase, pool.fee, pool.deadline, pool.status]);
+  registrations.forEach((item) => rows.push(["INSCRICAO", item.id, item.poolId, item.name, item.pixName, item.mode, `${item.registrationStatus}/${item.paymentStatus}`]));
+  matches.forEach((item) => rows.push(["JOGO", item.id, item.poolId, `${item.timeA} x ${item.timeB}`, item.dataHora, item.hasResult ? `${item.resultA} x ${item.resultB}` : "", item.status]));
+  guesses.forEach((item) => rows.push(["PALPITE", item.id, item.poolId, item.name, `${item.timeA} x ${item.timeB}`, `${item.guessA} x ${item.guessB}`, ""]));
   const csv = "\ufeff" + rows.map((row) => row.map(csvCell).join(";")).join("\r\n");
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  link.download = `backup-bolao-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `backup-${(pool?.name || "bolao").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 }

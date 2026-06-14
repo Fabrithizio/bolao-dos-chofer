@@ -52,6 +52,16 @@ Uma inscrição com PIX pendente pode palpitar para não perder o horário do jo
 
 Inscrições novas ficam ocultas do público enquanto aguardam análise. Os palpites ficam guardados, mas também permanecem ocultos. Quando o organizador aprova ou confirma o PIX, o participante e seus palpites aparecem normalmente.
 
+Na seção **Minha inscrição, pagamento e palpites**, o participante sempre pode consultar novamente:
+
+- valor, chave e titular do PIX;
+- se ainda precisa pagar;
+- se informou que fez o PIX;
+- se está aguardando conferência;
+- se foi confirmado e está valendo prêmio.
+
+Depois de pagar, ele deve clicar em **Já fiz o PIX**. Isso não confirma o pagamento automaticamente: apenas avisa o organizador. A confirmação continua sendo manual e deve ser feita olhando o recebimento na conta.
+
 ## Confirmar um PIX
 
 1. Confira no aplicativo do banco o nome do pagador e o valor.
@@ -59,6 +69,10 @@ Inscrições novas ficam ocultas do público enquanto aguardam análise. Os palp
 3. Compare **Nome da inscrição** e **Nome no PIX**.
 4. Clique em **Confirmar** somente depois que o dinheiro aparecer na conta.
 5. Use **Recusar** quando o pagamento não for localizado ou estiver incorreto.
+
+No painel, primeiro escolha **Administrando o bolão**. A lista de jogos, resultados, inscrições, pagamentos e o backup passam a mostrar apenas aquele bolão.
+
+Em inscrição paga, **Confirmar PIX recebido** também aprova automaticamente o cadastro e libera o selo **Valendo prêmio**. O botão **Aprovar participação** é usado somente para inscrições por diversão.
 
 O site mostra apenas o nome e a situação do pagamento. Não mostra chave PIX do participante, dados bancários ou comprovantes.
 

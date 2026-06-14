@@ -119,6 +119,9 @@ function updateTeamLabels() {
   $("#labelTeamB").textContent = match ? match.timeB : "Time B";
 }
 function renderDashboard(data) {
+  const participant = data.participant;
+  const pool = data.pool;
+  $("#paymentPanel").innerHTML = paymentPanel(participant, pool);
   $("#dashboardSummary").innerHTML = `<div class="progress-summary">
     <strong>${data.completed} de ${data.total}</strong>
     <span>jogos com palpite registrado</span>
@@ -133,6 +136,31 @@ function renderDashboard(data) {
       ${match.isOpen ? `<button class="mini-button" type="button" data-use-match="${escapeHtml(match.id)}" data-guess-a="${match.guessA ?? ""}" data-guess-b="${match.guessB ?? ""}">${match.hasGuess ? "Editar" : "Palpitar"}</button>` : ""}
     </div></div>
   </article>`).join("") : `<div class="empty-state">Nenhum jogo cadastrado.</div>`;
+}
+function paymentPanel(participant, pool) {
+  if (participant.mode === "DIVERSAO") {
+    return `<div class="payment-status-card neutral-status"><div><span class="pill neutral">Só diversão</span>
+      <h3>Você participa do ranking geral</h3><p>Esta inscrição não concorre ao prêmio em dinheiro.</p></div></div>`;
+  }
+  if (participant.paymentStatus === "CONFIRMADO") {
+    return `<div class="payment-status-card confirmed-status"><div><span class="pill">Valendo prêmio</span>
+      <h3>PIX confirmado pelo organizador</h3><p>Sua participação está confirmada no ranking do prêmio.</p></div></div>`;
+  }
+  if (participant.paymentStatus === "PIX_ENVIADO") {
+    return `<div class="payment-status-card waiting-status"><div><span class="pill waiting">Aguardando confirmação</span>
+      <h3>Você informou que fez o PIX</h3><p>O organizador precisa conferir o recebimento na conta. Isso pode demorar. Em caso de dúvida, use o grupo do WhatsApp.</p>
+      <p><strong>Valor:</strong> ${money(pool.fee)} · <strong>Chave:</strong> ${escapeHtml(pool.pixKey)} · <strong>Titular:</strong> ${escapeHtml(pool.pixOwner)}</p></div></div>`;
+  }
+  if (participant.paymentStatus === "RECUSADO") {
+    return `<div class="payment-status-card danger-status"><div><span class="pill danger">PIX não localizado</span>
+      <h3>Confira e fale com o organizador</h3><p>Confira nome, valor e comprovante pelo grupo do WhatsApp. Se fez um novo pagamento ou corrigiu o problema, informe novamente.</p></div>
+      <button class="button payment-report-button" type="button" data-report-payment>Informar PIX novamente</button></div>`;
+  }
+  return `<div class="payment-status-card waiting-status"><div><span class="pill waiting">Pagamento pendente</span>
+    <h3>Faça o PIX para concorrer ao prêmio</h3>
+    <p><strong>Valor:</strong> ${money(pool.fee)}<br><strong>Chave PIX:</strong> ${escapeHtml(pool.pixKey)}<br><strong>Titular:</strong> ${escapeHtml(pool.pixOwner)}</p>
+    <p>Depois de pagar, clique no botão. A confirmação é manual e pode demorar.</p></div>
+    <button class="button payment-report-button" type="button" data-report-payment>Já fiz o PIX</button></div>`;
 }
 
 async function loadData() {
@@ -150,7 +178,13 @@ async function loadData() {
   }
 }
 
-$("#poolId").addEventListener("change", renderPool);
+$("#poolId").addEventListener("change", () => {
+  renderPool();
+  $("#paymentPanel").innerHTML = "";
+  $("#dashboardSummary").innerHTML = "";
+  $("#myGuesses").innerHTML = "";
+  setStatus($("#dashboardStatus"), "Consulte sua situação neste bolão.");
+});
 $("#mode").addEventListener("change", renderPool);
 $("#matchId").addEventListener("change", updateTeamLabels);
 $("#dashboardForm").addEventListener("submit", async (event) => {
@@ -166,7 +200,28 @@ $("#dashboardForm").addEventListener("submit", async (event) => {
   } catch (error) { setStatus($("#dashboardStatus"), error.message, "error"); }
   finally { button.disabled = false; }
 });
+async function loadParticipantDashboard() {
+  const data = await apiPost({
+    action: "participantDashboard", poolId: $("#poolId").value,
+    name: $("#dashboardName").value.trim(), participantPin: $("#dashboardPin").value
+  });
+  renderDashboard(data);
+  return data;
+}
 document.addEventListener("click", (event) => {
+  const reportButton = event.target.closest("[data-report-payment]");
+  if (reportButton) {
+    reportButton.disabled = true;
+    apiPost({
+      action: "reportPayment", poolId: $("#poolId").value,
+      name: $("#dashboardName").value.trim(), participantPin: $("#dashboardPin").value
+    }).then(async (data) => {
+      setStatus($("#dashboardStatus"), data.message, "success");
+      await loadParticipantDashboard();
+    }).catch((error) => setStatus($("#dashboardStatus"), error.message, "error"))
+      .finally(() => { reportButton.disabled = false; });
+    return;
+  }
   const button = event.target.closest("[data-use-match]");
   if (!button) return;
   $("#name").value = $("#dashboardName").value.trim();
@@ -193,10 +248,16 @@ $("#registrationForm").addEventListener("submit", async (event) => {
     const data = await apiPost(payload);
     $("#name").value = payload.name;
     $("#participantPin").value = payload.participantPin;
+    $("#dashboardName").value = payload.name;
+    $("#dashboardPin").value = payload.participantPin;
     event.target.reset();
     $("#mode").value = "PAGO";
     await loadData();
     setStatus($("#registrationStatus"), data.message, "success");
+    try {
+      await loadParticipantDashboard();
+      $("#dashboardForm").scrollIntoView({ behavior: "smooth" });
+    } catch (ignored) {}
   } catch (error) {
     setStatus($("#registrationStatus"), error.message, "error");
   } finally {

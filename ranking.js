@@ -31,8 +31,9 @@ function badge(item) {
   if (item.registrationStatus !== "APROVADO") return `<span class="pill waiting">Em análise</span>`;
   if (item.mode === "DIVERSAO") return `<span class="pill neutral">Só diversão</span>`;
   if (item.paymentStatus === "CONFIRMADO") return `<span class="pill">PIX confirmado</span>`;
+  if (item.paymentStatus === "PIX_ENVIADO") return `<span class="pill waiting">Aguardando confirmação</span>`;
   if (item.paymentStatus === "RECUSADO") return `<span class="pill danger">Recusado</span>`;
-  return `<span class="pill waiting">Aguardando PIX</span>`;
+  return `<span class="pill waiting">PIX pendente</span>`;
 }
 
 function rankingRows(items, includeStatus) {
