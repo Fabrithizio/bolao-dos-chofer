@@ -15,6 +15,44 @@ const pin = () => {
 function setStatus(element, message, type = "") {
   element.textContent = message; element.className = `status-line ${type}`.trim();
 }
+function showAdminFeedback(message, type = "success") {
+  const toast = $("#adminToast");
+  toast.textContent = message;
+  toast.className = `admin-toast visible ${type}`.trim();
+  window.clearTimeout(showAdminFeedback.timer);
+  showAdminFeedback.timer = window.setTimeout(() => { toast.className = "admin-toast"; }, 4500);
+}
+function setButtonBusy(button) {
+  if (!button) return () => {};
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Processando...";
+  return () => {
+    button.disabled = false;
+    button.textContent = originalText;
+  };
+}
+function askConfirmation({ title, message, acceptLabel = "Confirmar", danger = false }) {
+  const dialog = $("#actionConfirmDialog");
+  $("#confirmDialogTitle").textContent = title;
+  $("#confirmDialogMessage").textContent = message;
+  $("#confirmDialogAccept").textContent = acceptLabel;
+  $("#confirmDialogAccept").className = `button ${danger ? "danger-button" : ""}`.trim();
+  $("#confirmDialogIcon").className = `confirm-dialog-icon ${danger ? "danger" : ""}`.trim();
+  dialog.showModal();
+  return new Promise((resolve) => {
+    const finish = (answer) => {
+      dialog.close();
+      $("#confirmDialogAccept").onclick = null;
+      $("#confirmDialogCancel").onclick = null;
+      dialog.oncancel = null;
+      resolve(answer);
+    };
+    $("#confirmDialogAccept").onclick = () => finish(true);
+    $("#confirmDialogCancel").onclick = () => finish(false);
+    dialog.oncancel = (event) => { event.preventDefault(); finish(false); };
+  });
+}
 async function apiPost(payload) {
   const response = await fetch(API_URL, {
     method: "POST", redirect: "follow",
@@ -91,11 +129,12 @@ function renderPayments(registrations = state.registrations.filter((item) => ite
     <td><div class="action-row">
       ${item.registrationStatus === "BLOQUEADO" ? `
         <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="PENDENTE">Reabrir análise</button>` : `
-      ${item.mode === "DIVERSAO" ? `<button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar participação</button>` : ""}
+      ${item.mode === "DIVERSAO" && item.registrationStatus !== "APROVADO" ? `<button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar participação</button>` : ""}
       <button class="mini-button reject" data-registration="${escapeHtml(item.id)}" data-registration-status="BLOQUEADO">Bloquear</button>
-      ${item.mode === "PAGO" ? `
+      ${item.mode === "PAGO" && item.paymentStatus !== "CONFIRMADO" ? `
         <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar PIX recebido</button>
-        <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}`}
+        ${item.paymentStatus !== "RECUSADO" ? `<button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}` : ""}
+      ${item.mode === "PAGO" && item.paymentStatus === "CONFIRMADO" ? `<span class="action-complete">Pagamento concluído</span>` : ""}`}
       <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
     </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição encontrada.</td></tr>`;
 }
@@ -223,14 +262,27 @@ $("#matchForm").addEventListener("submit", async (event) => {
 });
 $("#resultForm").addEventListener("submit", async (event) => {
   event.preventDefault();
+  let restoreButton = () => {};
   try {
+    const match = state.matches.find((item) => item.id === $("#resultMatchId").value);
+    const confirmed = await askConfirmation({
+      title: "Publicar resultado?",
+      message: `${match?.timeA || "Time A"} ${$("#resultA").value} x ${$("#resultB").value} ${match?.timeB || "Time B"}. O ranking será recalculado imediatamente.`,
+      acceptLabel: "Publicar resultado"
+    });
+    if (!confirmed) return;
+    restoreButton = setButtonBusy(event.submitter);
     setStatus($("#resultStatus"), "Publicando...");
     const data = await apiPost({
       action: "setResult", pin: pin(), matchId: $("#resultMatchId").value,
       resultA: $("#resultA").value, resultB: $("#resultB").value
     });
-    setStatus($("#resultStatus"), data.message, "success"); $("#resultA").value = ""; $("#resultB").value = ""; await loadAdmin();
-  } catch (error) { setStatus($("#resultStatus"), error.message, "error"); }
+    setStatus($("#resultStatus"), data.message, "success"); $("#resultA").value = ""; $("#resultB").value = "";
+    showAdminFeedback(data.message || "Resultado publicado e ranking atualizado."); await loadAdmin();
+  } catch (error) {
+    setStatus($("#resultStatus"), error.message, "error");
+    showAdminFeedback(error.message, "error");
+  } finally { restoreButton(); }
 });
 document.addEventListener("click", async (event) => {
   const paymentButton = event.target.closest("[data-payment]");
@@ -240,22 +292,58 @@ document.addEventListener("click", async (event) => {
   const editPoolButton = event.target.closest("[data-edit-pool]");
   const editMatchButton = event.target.closest("[data-edit-match]");
   const matchStatusButton = event.target.closest("[data-match-status]");
+  let restoreButton = () => {};
   try {
     if (editPoolButton) return startPoolEdit(editPoolButton.dataset.editPool);
     if (editMatchButton) return startMatchEdit(editMatchButton.dataset.editMatch);
     if (matchStatusButton) {
+      const match = state.matches.find((item) => item.id === matchStatusButton.dataset.matchStatus);
+      const isCancel = matchStatusButton.dataset.nextMatchStatus === "CANCELADO";
+      const confirmed = await askConfirmation({
+        title: isCancel ? "Cancelar este jogo?" : "Reativar este jogo?",
+        message: `${match?.timeA || "Time A"} x ${match?.timeB || "Time B"}. ${isCancel ? "Ele deixará de aceitar palpites e não contará no ranking." : "Ele voltará a aceitar palpites se o horário ainda permitir."}`,
+        acceptLabel: isCancel ? "Cancelar jogo" : "Reativar jogo",
+        danger: isCancel
+      });
+      if (!confirmed) return;
+      restoreButton = setButtonBusy(matchStatusButton);
       await apiPost({
         action: "setMatchStatus", pin: pin(), matchId: matchStatusButton.dataset.matchStatus,
         status: matchStatusButton.dataset.nextMatchStatus
       });
+      showAdminFeedback(isCancel ? "Jogo cancelado com sucesso." : "Jogo reativado com sucesso.");
       return loadAdmin();
     }
     if (paymentButton) {
+      const registration = state.registrations.find((item) => item.id === paymentButton.dataset.payment);
+      const isConfirm = paymentButton.dataset.status === "CONFIRMADO";
+      const confirmed = await askConfirmation({
+        title: isConfirm ? "Confirmar recebimento do PIX?" : "Marcar PIX como não localizado?",
+        message: isConfirm
+          ? `${registration?.name || "Participante"} será aprovado e passará a disputar o prêmio deste bolão. Confirme somente depois de conferir o dinheiro na sua conta.`
+          : `${registration?.name || "Participante"} verá que o pagamento não foi localizado e poderá informar o PIX novamente.`,
+        acceptLabel: isConfirm ? "Sim, recebi o PIX" : "Marcar como não localizado",
+        danger: !isConfirm
+      });
+      if (!confirmed) return;
+      restoreButton = setButtonBusy(paymentButton);
       await apiPost({ action: "confirmPayment", pin: pin(), registrationId: paymentButton.dataset.payment, status: paymentButton.dataset.status });
+      showAdminFeedback(isConfirm ? `${registration?.name || "Participante"} agora está valendo prêmio.` : "Pagamento marcado como não localizado.");
       await loadAdmin();
     }
     if (poolButton) {
+      const pool = state.pools.find((item) => item.id === poolButton.dataset.poolStatus);
+      const isClosing = poolButton.dataset.nextStatus === "ENCERRADO";
+      const confirmed = await askConfirmation({
+        title: isClosing ? "Encerrar este bolão?" : "Reabrir este bolão?",
+        message: `${pool?.name || "Bolão"}. ${isClosing ? "Novas inscrições deixarão de ser aceitas." : "Novas inscrições voltarão a ser aceitas enquanto o prazo permitir."}`,
+        acceptLabel: isClosing ? "Encerrar bolão" : "Reabrir bolão",
+        danger: isClosing
+      });
+      if (!confirmed) return;
+      restoreButton = setButtonBusy(poolButton);
       await apiPost({ action: "setPoolStatus", pin: pin(), poolId: poolButton.dataset.poolStatus, status: poolButton.dataset.nextStatus });
+      showAdminFeedback(isClosing ? "Bolão encerrado." : "Bolão reaberto.");
       await loadAdmin();
     }
     if (resetPinButton) {
@@ -265,12 +353,32 @@ document.addEventListener("click", async (event) => {
       setStatus($("#adminStatus"), "PIN pessoal redefinido.", "success");
     }
     if (registrationButton) {
+      const registration = state.registrations.find((item) => item.id === registrationButton.dataset.registration);
+      const nextStatus = registrationButton.dataset.registrationStatus;
+      const isBlock = nextStatus === "BLOQUEADO";
+      const isApprove = nextStatus === "APROVADO";
+      const confirmed = await askConfirmation({
+        title: isBlock ? "Bloquear participante?" : isApprove ? "Aprovar participante?" : "Reabrir análise?",
+        message: isBlock
+          ? `${registration?.name || "Participante"} ficará impedido de enviar novos palpites e continuará fora da exibição pública. O histórico não será apagado.`
+          : isApprove
+            ? `${registration?.name || "Participante"} será incluído normalmente neste bolão.`
+            : `${registration?.name || "Participante"} voltará para análise, mas ainda não estará valendo prêmio.`,
+        acceptLabel: isBlock ? "Bloquear participante" : isApprove ? "Aprovar participante" : "Reabrir análise",
+        danger: isBlock
+      });
+      if (!confirmed) return;
+      restoreButton = setButtonBusy(registrationButton);
       await apiPost({
         action: "setRegistrationStatus", pin: pin(),
         registrationId: registrationButton.dataset.registration,
         status: registrationButton.dataset.registrationStatus
       });
+      showAdminFeedback(isBlock ? `${registration?.name || "Participante"} foi bloqueado.` : isApprove ? "Participante aprovado." : "Inscrição reaberta para análise.");
       await loadAdmin();
     }
-  } catch (error) { setStatus($("#adminStatus"), error.message, "error"); }
+  } catch (error) {
+    setStatus($("#adminStatus"), error.message, "error");
+    showAdminFeedback(error.message, "error");
+  } finally { restoreButton(); }
 });

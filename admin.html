@@ -97,10 +97,25 @@
       </section>
 
       <div class="section-heading"><div><p class="eyebrow">Conferência e suporte</p><h2>Inscrições e pagamentos</h2></div></div>
+      <div class="notice compact-notice">Participantes sem PIX confirmado podem palpitar, mas ficam fora da disputa do prêmio até você confirmar o recebimento. Confirmar o PIX aprova automaticamente a inscrição paga.</div>
       <div class="filter-bar"><label for="adminParticipantFilter">Localizar participante</label><input id="adminParticipantFilter" type="search" placeholder="Digite o nome"></div>
       <div class="table-wrap"><table><thead><tr><th>Bolão</th><th>Nome da inscrição</th><th>Nome no PIX</th><th>Cadastro</th><th>Pagamento</th><th>Ação</th></tr></thead><tbody id="paymentBody"></tbody></table></div>
     </div>
   </main>
+
+  <dialog class="confirm-dialog" id="actionConfirmDialog">
+    <div class="confirm-dialog-content">
+      <span class="confirm-dialog-icon" id="confirmDialogIcon">!</span>
+      <h2 id="confirmDialogTitle">Confirmar ação</h2>
+      <p id="confirmDialogMessage"></p>
+      <div class="confirm-dialog-actions">
+        <button class="button secondary" id="confirmDialogCancel" type="button">Voltar</button>
+        <button class="button" id="confirmDialogAccept" type="button">Confirmar</button>
+      </div>
+    </div>
+  </dialog>
+  <div class="admin-toast" id="adminToast" role="status" aria-live="polite"></div>
+
   <footer class="footer">Bolão Dos Chofer · Administração protegida por PIN</footer>
   <script src="config.js"></script><script src="admin.js"></script>
 </body>

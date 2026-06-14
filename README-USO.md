@@ -74,6 +74,10 @@ No painel, primeiro escolha **Administrando o bolão**. A lista de jogos, result
 
 Em inscrição paga, **Confirmar PIX recebido** também aprova automaticamente o cadastro e libera o selo **Valendo prêmio**. O botão **Aprovar participação** é usado somente para inscrições por diversão.
 
+O participante pago pode enviar palpites antes da confirmação, mas permanece fora da disputa do prêmio e da classificação pública dos pagantes. Ele somente passa a concorrer quando o administrador confere o recebimento na conta e confirma o PIX.
+
+O painel pede uma confirmação antes das ações importantes, como confirmar ou recusar PIX, bloquear participante, cancelar jogo, encerrar bolão e publicar resultado. Depois da ação, uma mensagem colorida aparece na tela. Quando o PIX já está confirmado, os botões de confirmar e recusar deixam de aparecer.
+
 O site mostra apenas o nome e a situação do pagamento. Não mostra chave PIX do participante, dados bancários ou comprovantes.
 
 A confirmação administrativa pode ser feita depois do prazo de inscrição. O importante é que a pessoa tenha se inscrito e enviado o pagamento dentro do prazo. O prazo impede novas inscrições, mas não impede o organizador de concluir a conferência depois.
