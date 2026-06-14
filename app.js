@@ -110,6 +110,22 @@ function updateTeamLabels() {
   $("#labelTeamA").textContent = match ? match.timeA : "Time A";
   $("#labelTeamB").textContent = match ? match.timeB : "Time B";
 }
+function renderDashboard(data) {
+  $("#dashboardSummary").innerHTML = `<div class="progress-summary">
+    <strong>${data.completed} de ${data.total}</strong>
+    <span>jogos com palpite registrado</span>
+  </div>`;
+  $("#myGuesses").innerHTML = data.matches.length ? data.matches.map((match) => `<article class="match-card ${match.hasGuess ? "completed-match" : "missing-match"}">
+    <div class="match-card-footer"><div>
+      <div class="teams compact-teams"><strong>${escapeHtml(match.timeA)}</strong><span>VS</span><strong>${escapeHtml(match.timeB)}</strong></div>
+      <div class="match-time">${formatDate(match.dateTime)}</div>
+    </div>
+    <div class="guess-status">
+      ${match.hasGuess ? `<span class="pill">Registrado: ${match.guessA} x ${match.guessB}</span>` : `<span class="pill waiting">Falta palpitar</span>`}
+      ${match.isOpen ? `<button class="mini-button" type="button" data-use-match="${escapeHtml(match.id)}" data-guess-a="${match.guessA ?? ""}" data-guess-b="${match.guessB ?? ""}">${match.hasGuess ? "Editar" : "Palpitar"}</button>` : ""}
+    </div></div>
+  </article>`).join("") : `<div class="empty-state">Nenhum jogo cadastrado.</div>`;
+}
 
 async function loadData() {
   try {
@@ -129,6 +145,30 @@ async function loadData() {
 $("#poolId").addEventListener("change", renderPool);
 $("#mode").addEventListener("change", renderPool);
 $("#matchId").addEventListener("change", updateTeamLabels);
+$("#dashboardForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = $("#dashboardButton");
+  button.disabled = true; setStatus($("#dashboardStatus"), "Consultando...");
+  try {
+    const data = await apiPost({
+      action: "participantDashboard", poolId: $("#poolId").value,
+      name: $("#dashboardName").value.trim(), participantPin: $("#dashboardPin").value
+    });
+    renderDashboard(data); setStatus($("#dashboardStatus"), "Conferência atualizada.", "success");
+  } catch (error) { setStatus($("#dashboardStatus"), error.message, "error"); }
+  finally { button.disabled = false; }
+});
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-use-match]");
+  if (!button) return;
+  $("#name").value = $("#dashboardName").value.trim();
+  $("#participantPin").value = $("#dashboardPin").value;
+  $("#matchId").value = button.dataset.useMatch;
+  $("#guessA").value = button.dataset.guessA;
+  $("#guessB").value = button.dataset.guessB;
+  updateTeamLabels();
+  $("#guessForm").scrollIntoView({ behavior: "smooth" });
+});
 
 $("#registrationForm").addEventListener("submit", async (event) => {
   event.preventDefault();

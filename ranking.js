@@ -1,6 +1,7 @@
 "use strict";
 const $ = (selector) => document.querySelector(selector);
 let pools = [];
+let currentData = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
 })[char]);
@@ -38,6 +39,7 @@ function rankingRows(items, includeStatus) {
 }
 
 function render(data) {
+  currentData = data;
   pools = data.pools || [];
   const currentValue = $("#poolId").value;
   $("#poolId").innerHTML = pools.map((pool) =>
@@ -54,13 +56,28 @@ function render(data) {
     <div><span>Inscrição</span><strong>${money(pool.fee)}</strong></div>
     <div><span>Pagos confirmados</span><strong>${pool.confirmedPaid}</strong></div>
     <div><span>Prazo</span><strong>${formatDate(pool.deadline)}</strong></div>`;
-  $("#paidRankingBody").innerHTML = rankingRows(data.paidRanking || [], false);
-  $("#generalRankingBody").innerHTML = rankingRows(data.generalRanking || [], true);
+  renderFilteredRankings();
   $("#participantList").innerHTML = (data.participants || []).length
     ? data.participants.map((item) => `<div class="participant-row"><strong>${escapeHtml(item.name)}</strong>${badge(item)}</div>`).join("")
     : `<div class="empty-state">Nenhum participante.</div>`;
-  $("#guessesBody").innerHTML = (data.guesses || []).length
-    ? data.guesses.map((guess) => `<tr><td><strong>${escapeHtml(guess.name)}</strong></td>
+  renderFilteredGuesses();
+}
+function normalize(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+function renderFilteredRankings() {
+  if (!currentData) return;
+  const filter = normalize($("#rankingFilter").value);
+  const matches = (item) => !filter || normalize(item.name).includes(filter);
+  $("#paidRankingBody").innerHTML = rankingRows((currentData.paidRanking || []).filter(matches), false);
+  $("#generalRankingBody").innerHTML = rankingRows((currentData.generalRanking || []).filter(matches), true);
+}
+function renderFilteredGuesses() {
+  if (!currentData) return;
+  const filter = normalize($("#guessFilter").value);
+  const guesses = (currentData.guesses || []).filter((guess) => !filter || normalize(guess.name).includes(filter));
+  $("#guessesBody").innerHTML = guesses.length
+    ? guesses.map((guess) => `<tr><td><strong>${escapeHtml(guess.name)}</strong></td>
       <td>${escapeHtml(guess.timeA)} x ${escapeHtml(guess.timeB)}</td><td>${guess.guessA} x ${guess.guessB}</td>
       <td>${guess.hasResult ? `${guess.resultA} x ${guess.resultB}` : `<span class="pill waiting">aguardando</span>`}</td>
       <td>${guess.hasResult ? `${guess.points} pts` : "—"}</td></tr>`).join("")
@@ -76,5 +93,7 @@ async function refresh(poolId = $("#poolId").value) {
   }
 }
 $("#poolId").addEventListener("change", () => refresh($("#poolId").value));
+$("#rankingFilter").addEventListener("input", renderFilteredRankings);
+$("#guessFilter").addEventListener("input", renderFilteredGuesses);
 refresh();
 setInterval(() => refresh(), Math.max(5, Number(REFRESH_SECONDS) || 15) * 1000);

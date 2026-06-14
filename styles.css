@@ -457,6 +457,69 @@ select:focus {
   gap: 7px;
 }
 
+.form-cancel {
+  margin-top: 10px;
+}
+
+.match-card-footer,
+.guess-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 1fr 0.55fr auto;
+  gap: 12px;
+}
+
+.inline-form .button {
+  width: auto;
+}
+
+.progress-summary {
+  margin: 16px 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.progress-summary strong {
+  color: var(--gold);
+  font-size: 1.45rem;
+}
+
+.completed-match {
+  border-color: rgba(50, 213, 131, 0.25);
+}
+
+.missing-match {
+  border-color: rgba(244, 201, 93, 0.25);
+}
+
+.compact-teams {
+  min-width: 280px;
+  margin-top: 0;
+}
+
+.filter-bar {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-bar label {
+  min-width: max-content;
+  margin: 0;
+}
+
 .disabled-form {
   opacity: 0.7;
 }
@@ -696,6 +759,25 @@ tbody tr:hover {
   .participant-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .inline-form {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-form .button {
+    width: 100%;
+  }
+
+  .match-card-footer,
+  .guess-status,
+  .filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compact-teams {
+    min-width: 0;
   }
 
   .whatsapp-card {

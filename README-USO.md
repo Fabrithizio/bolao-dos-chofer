@@ -82,6 +82,42 @@ Bloquear é mais seguro do que apagar, pois mantém o histórico em caso de dúv
 
 O horário usa o fuso de Recife/Fortaleza. No horário marcado, o jogo fecha automaticamente para novos palpites.
 
+## Corrigir bolão ou jogo
+
+O painel administrativo possui botões **Editar** nos bolões e jogos cadastrados.
+
+Regras de segurança:
+
+- bolão com PIX confirmado não pode mudar o valor da inscrição;
+- jogo com palpites não pode trocar os times nem ser movido para outro bolão;
+- jogo com palpites pode ser adiado, mas não antecipado;
+- jogo com resultado publicado não pode ser editado.
+
+Essas travas evitam mudar as condições depois que participantes já pagaram ou palpitaram.
+
+É tecnicamente possível alterar células diretamente na planilha, mas não é recomendado. Datas em formato errado, IDs alterados ou nomes de colunas modificados podem quebrar os vínculos. Prefira sempre o painel.
+
+## Conferir os próprios palpites
+
+Na página principal, a seção **Meus palpites e jogos faltantes** pede nome e PIN pessoal. Ela mostra:
+
+- quantidade de jogos já preenchidos;
+- palpites registrados;
+- jogos que ainda faltam;
+- botão para palpitar ou editar enquanto o jogo estiver aberto.
+
+Enviar novamente um palpite para o mesmo jogo atualiza o placar anterior, desde que a partida ainda não tenha começado.
+
+Em bolão gratuito com entrada tardia, a conferência considera somente os jogos que ainda estavam disponíveis quando a pessoa se inscreveu.
+
+## Filtrar ranking e palpites
+
+Na página de ranking, use o campo **Filtrar por participante** para localizar uma pessoa e o campo **Ver palpites de** para mostrar somente os palpites daquele nome.
+
+## Reaproveitar times
+
+Ao cadastrar um jogo, os campos Time A e Time B sugerem automaticamente seleções já usadas anteriormente. Você pode escolher a sugestão ou digitar um novo time.
+
 ## Mandar o link para os motoristas
 
 Envie o link principal do GitHub Pages pelo WhatsApp:

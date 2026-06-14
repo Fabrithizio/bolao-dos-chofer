@@ -1,5 +1,5 @@
 "use strict";
-const state = { pools: [], matches: [], registrations: [] };
+const state = { pools: [], matches: [], registrations: [], teams: [] };
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -28,7 +28,8 @@ async function loadAdmin() {
   try {
     setStatus($("#adminStatus"), "Carregando...");
     const data = await apiPost({ action: "adminData", pin: pin() });
-    state.pools = data.pools || []; state.matches = data.matches || []; state.registrations = data.registrations || [];
+    state.pools = data.pools || []; state.matches = data.matches || [];
+    state.registrations = data.registrations || []; state.teams = data.teams || [];
     $("#adminContent").hidden = false;
     setStatus($("#adminStatus"), "Painel liberado.", "success");
     render();
@@ -42,8 +43,19 @@ function render() {
   ).join("") || `<option value="">Nenhum jogo</option>`;
   $("#poolAdminList").innerHTML = state.pools.length ? state.pools.map((pool) => `<div class="participant-row">
     <div><strong>${escapeHtml(pool.name)}</strong><small>${escapeHtml(pool.phase)} · ${money(pool.fee)} · ${pool.confirmedPaid} pagos</small></div>
-    <button class="mini-button" data-pool-status="${escapeHtml(pool.id)}" data-next-status="${pool.status === "ABERTO" ? "ENCERRADO" : "ABERTO"}">${pool.status === "ABERTO" ? "Encerrar" : "Reabrir"}</button>
+    <div class="action-row">
+      <button class="mini-button" data-edit-pool="${escapeHtml(pool.id)}">Editar</button>
+      <button class="mini-button" data-pool-status="${escapeHtml(pool.id)}" data-next-status="${pool.status === "ABERTO" ? "ENCERRADO" : "ABERTO"}">${pool.status === "ABERTO" ? "Encerrar" : "Reabrir"}</button>
+    </div>
   </div>`).join("") : `<div class="empty-state">Nenhum bolão.</div>`;
+
+  $("#knownTeams").innerHTML = state.teams.map((team) => `<option value="${escapeHtml(team)}"></option>`).join("");
+  $("#matchAdminList").innerHTML = state.matches.length ? state.matches.map((match) => `<article class="match-card">
+    <span class="phase">${escapeHtml(match.fase)}</span>
+    <div class="teams"><strong>${escapeHtml(match.timeA)}</strong><span>VS</span><strong>${escapeHtml(match.timeB)}</strong></div>
+    <div class="match-card-footer"><span class="match-time">${formatDate(match.dataHora)}${match.hasResult ? ` · ${match.resultA} x ${match.resultB}` : ""}</span>
+    <button class="mini-button" data-edit-match="${escapeHtml(match.id)}" ${match.hasResult ? "disabled" : ""}>Editar</button></div>
+  </article>`).join("") : `<div class="empty-state">Nenhum jogo cadastrado.</div>`;
 
   const poolMap = Object.fromEntries(state.pools.map((pool) => [pool.id, pool.name]));
   $("#paymentBody").innerHTML = state.registrations.length ? state.registrations.map((item) => `<tr>
@@ -74,29 +86,70 @@ function updateResultLabels() {
   const match = state.matches.find((item) => item.id === $("#resultMatchId").value);
   $("#resultLabelA").textContent = match?.timeA || "Time A"; $("#resultLabelB").textContent = match?.timeB || "Time B";
 }
+function localDateTimeValue(value) {
+  const date = new Date(value);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Recife", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false
+  }).formatToParts(date).reduce((acc, part) => ({ ...acc, [part.type]: part.value }), {});
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+function startPoolEdit(poolId) {
+  const pool = state.pools.find((item) => item.id === poolId);
+  if (!pool) return;
+  $("#editingPoolId").value = pool.id; $("#poolName").value = pool.name; $("#poolPhase").value = pool.phase;
+  $("#poolFee").value = pool.fee; $("#poolDeadline").value = localDateTimeValue(pool.deadline);
+  $("#pixKey").value = pool.pixKey || ""; $("#pixOwner").value = pool.pixOwner || "";
+  $("#poolFormTitle").textContent = "Editar bolão"; $("#poolSubmitButton").textContent = "Salvar alterações";
+  $("#cancelPoolEdit").hidden = false; $("#poolForm").scrollIntoView({ behavior: "smooth" });
+}
+function resetPoolForm() {
+  $("#poolForm").reset(); $("#editingPoolId").value = ""; $("#poolFee").value = "5";
+  $("#poolFormTitle").textContent = "Criar novo bolão"; $("#poolSubmitButton").textContent = "Criar Bolão";
+  $("#cancelPoolEdit").hidden = true;
+}
+function startMatchEdit(matchId) {
+  const match = state.matches.find((item) => item.id === matchId);
+  if (!match || match.hasResult) return;
+  $("#editingMatchId").value = match.id; $("#matchPoolId").value = match.poolId; $("#phase").value = match.fase;
+  $("#teamA").value = match.timeA; $("#teamB").value = match.timeB; $("#matchDate").value = localDateTimeValue(match.dataHora);
+  $("#matchFormTitle").textContent = "Editar jogo"; $("#matchSubmitButton").textContent = "Salvar alterações";
+  $("#cancelMatchEdit").hidden = false; updateMatchRuleNotice(); $("#matchForm").scrollIntoView({ behavior: "smooth" });
+}
+function resetMatchForm() {
+  $("#matchForm").reset(); $("#editingMatchId").value = "";
+  $("#matchFormTitle").textContent = "Cadastrar jogo"; $("#matchSubmitButton").textContent = "Cadastrar Jogo";
+  $("#cancelMatchEdit").hidden = true; updateMatchRuleNotice();
+}
 $("#loadAdminButton").addEventListener("click", loadAdmin);
 $("#resultMatchId").addEventListener("change", updateResultLabels);
 $("#matchPoolId").addEventListener("change", updateMatchRuleNotice);
+$("#cancelPoolEdit").addEventListener("click", resetPoolForm);
+$("#cancelMatchEdit").addEventListener("click", resetMatchForm);
 $("#poolForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     setStatus($("#poolStatus"), "Criando...");
+    const editingId = $("#editingPoolId").value;
     const data = await apiPost({
-      action: "addPool", pin: pin(), name: $("#poolName").value.trim(), phase: $("#poolPhase").value.trim(),
+      action: editingId ? "updatePool" : "addPool", poolId: editingId, pin: pin(),
+      name: $("#poolName").value.trim(), phase: $("#poolPhase").value.trim(),
       fee: $("#poolFee").value, deadline: $("#poolDeadline").value, pixKey: $("#pixKey").value.trim(), pixOwner: $("#pixOwner").value.trim()
     });
-    setStatus($("#poolStatus"), data.message, "success"); event.target.reset(); await loadAdmin();
+    setStatus($("#poolStatus"), data.message, "success"); resetPoolForm(); await loadAdmin();
   } catch (error) { setStatus($("#poolStatus"), error.message, "error"); }
 });
 $("#matchForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     setStatus($("#matchStatus"), "Cadastrando...");
+    const editingId = $("#editingMatchId").value;
     const data = await apiPost({
-      action: "addMatch", pin: pin(), poolId: $("#matchPoolId").value, phase: $("#phase").value.trim(),
+      action: editingId ? "updateMatch" : "addMatch", matchId: editingId, pin: pin(),
+      poolId: $("#matchPoolId").value, phase: $("#phase").value.trim(),
       teamA: $("#teamA").value.trim(), teamB: $("#teamB").value.trim(), matchDate: $("#matchDate").value
     });
-    setStatus($("#matchStatus"), data.message, "success"); event.target.reset(); await loadAdmin();
+    setStatus($("#matchStatus"), data.message, "success"); resetMatchForm(); await loadAdmin();
   } catch (error) { setStatus($("#matchStatus"), error.message, "error"); }
 });
 $("#resultForm").addEventListener("submit", async (event) => {
@@ -115,7 +168,11 @@ document.addEventListener("click", async (event) => {
   const poolButton = event.target.closest("[data-pool-status]");
   const resetPinButton = event.target.closest("[data-reset-pin]");
   const registrationButton = event.target.closest("[data-registration]");
+  const editPoolButton = event.target.closest("[data-edit-pool]");
+  const editMatchButton = event.target.closest("[data-edit-match]");
   try {
+    if (editPoolButton) return startPoolEdit(editPoolButton.dataset.editPool);
+    if (editMatchButton) return startMatchEdit(editMatchButton.dataset.editMatch);
     if (paymentButton) {
       await apiPost({ action: "confirmPayment", pin: pin(), registrationId: paymentButton.dataset.payment, status: paymentButton.dataset.status });
       await loadAdmin();

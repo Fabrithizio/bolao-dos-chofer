@@ -21,8 +21,9 @@
     <div id="adminContent" hidden>
       <div class="admin-grid">
         <section class="card">
-          <h2>Criar novo bolão</h2>
+          <h2 id="poolFormTitle">Criar novo bolão</h2>
           <form id="poolForm">
+            <input id="editingPoolId" type="hidden">
             <div class="form-group"><label for="poolName">Nome</label><input id="poolName" placeholder="Ex.: Bolão das Quartas" required></div>
             <div class="form-group"><label for="poolPhase">Fase</label><input id="poolPhase" placeholder="Ex.: Quartas de final" required></div>
             <div class="two-fields">
@@ -31,22 +32,28 @@
             </div>
             <div class="form-group"><label for="pixKey">Chave PIX</label><input id="pixKey" placeholder="CPF, telefone, e-mail ou aleatória"></div>
             <div class="form-group"><label for="pixOwner">Titular do PIX</label><input id="pixOwner" placeholder="Nome do recebedor"></div>
-            <button class="button" type="submit">Criar Bolão</button><p class="status-line" id="poolStatus"></p>
+            <button class="button" id="poolSubmitButton" type="submit">Criar Bolão</button>
+            <button class="button secondary form-cancel" id="cancelPoolEdit" type="button" hidden>Cancelar edição</button>
+            <p class="status-line" id="poolStatus"></p>
           </form>
         </section>
 
         <section class="card">
-          <h2>Cadastrar jogo</h2>
+          <h2 id="matchFormTitle">Cadastrar jogo</h2>
           <form id="matchForm">
+            <input id="editingMatchId" type="hidden">
             <div class="form-group"><label for="matchPoolId">Bolão</label><select id="matchPoolId"></select></div>
             <div class="form-group"><label for="phase">Fase</label><input id="phase" required></div>
             <div class="two-fields">
-              <div class="form-group"><label for="teamA">Time A</label><input id="teamA" required></div>
-              <div class="form-group"><label for="teamB">Time B</label><input id="teamB" required></div>
+              <div class="form-group"><label for="teamA">Time A</label><input id="teamA" list="knownTeams" required></div>
+              <div class="form-group"><label for="teamB">Time B</label><input id="teamB" list="knownTeams" required></div>
             </div>
+            <datalist id="knownTeams"></datalist>
             <div class="form-group"><label for="matchDate">Data e hora</label><input id="matchDate" type="datetime-local" required></div>
             <div id="matchRuleNotice" class="notice compact-notice"></div>
-            <button class="button" type="submit">Cadastrar Jogo</button><p class="status-line" id="matchStatus"></p>
+            <button class="button" id="matchSubmitButton" type="submit">Cadastrar Jogo</button>
+            <button class="button secondary form-cancel" id="cancelMatchEdit" type="button" hidden>Cancelar edição</button>
+            <p class="status-line" id="matchStatus"></p>
           </form>
         </section>
       </div>
@@ -69,6 +76,9 @@
           <div id="poolAdminList" class="participant-list"></div>
         </section>
       </div>
+
+      <div class="section-heading"><div><p class="eyebrow">Correções</p><h2>Jogos cadastrados</h2></div></div>
+      <div id="matchAdminList" class="match-list"></div>
 
       <div class="section-heading"><div><p class="eyebrow">Conferência e suporte</p><h2>Inscrições e pagamentos</h2></div></div>
       <div class="table-wrap"><table><thead><tr><th>Bolão</th><th>Nome da inscrição</th><th>Nome no PIX</th><th>Cadastro</th><th>Pagamento</th><th>Ação</th></tr></thead><tbody id="paymentBody"></tbody></table></div>

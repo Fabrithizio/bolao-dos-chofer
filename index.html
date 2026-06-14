@@ -108,6 +108,20 @@
       </section>
     </div>
 
+    <section class="card section-gap">
+      <p class="eyebrow">Minha conferência</p>
+      <h2>Meus palpites e jogos faltantes</h2>
+      <p class="muted">Informe o mesmo nome e PIN usados na inscrição. Uma única consulta mostra tudo o que você já enviou.</p>
+      <form id="dashboardForm" class="inline-form">
+        <input id="dashboardName" maxlength="100" placeholder="Seu nome completo" required>
+        <input id="dashboardPin" type="password" inputmode="numeric" minlength="4" maxlength="8" placeholder="Seu PIN" required>
+        <button class="button" id="dashboardButton" type="submit">Conferir meus palpites</button>
+      </form>
+      <p class="status-line" id="dashboardStatus"></p>
+      <div id="dashboardSummary"></div>
+      <div id="myGuesses" class="match-list"></div>
+    </section>
+
     <div class="grid section-gap">
       <aside class="card span-5">
         <h2>Regras de pontuação</h2>
