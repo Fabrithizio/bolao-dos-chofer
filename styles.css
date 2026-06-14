@@ -197,6 +197,7 @@ h2 {
 }
 
 .card {
+  min-width: 0;
   padding: clamp(20px, 4vw, 32px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -722,6 +723,10 @@ tbody tr:hover {
   gap: 24px;
 }
 
+.admin-grid > * {
+  min-width: 0;
+}
+
 .pin-card {
   max-width: 620px;
   margin-bottom: 24px;
@@ -817,6 +822,23 @@ tbody tr:hover {
 .confirm-dialog-content p {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.confirm-dialog-verification {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.confirm-dialog-verification label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.confirm-dialog-verification small {
+  display: block;
+  margin-top: 7px;
+  color: var(--gold);
 }
 
 .confirm-dialog-icon {

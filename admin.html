@@ -108,6 +108,12 @@
       <span class="confirm-dialog-icon" id="confirmDialogIcon">!</span>
       <h2 id="confirmDialogTitle">Confirmar ação</h2>
       <p id="confirmDialogMessage"></p>
+      <div class="confirm-dialog-verification" id="confirmDialogVerification" hidden>
+        <label for="confirmDialogInput">Digite o nome exato para confirmar</label>
+        <input id="confirmDialogInput" autocomplete="off">
+        <small id="confirmDialogHint"></small>
+        <p class="status-line error" id="confirmDialogError"></p>
+      </div>
       <div class="confirm-dialog-actions">
         <button class="button secondary" id="confirmDialogCancel" type="button">Voltar</button>
         <button class="button" id="confirmDialogAccept" type="button">Confirmar</button>

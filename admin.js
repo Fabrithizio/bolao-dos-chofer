@@ -32,13 +32,17 @@ function setButtonBusy(button) {
     button.textContent = originalText;
   };
 }
-function askConfirmation({ title, message, acceptLabel = "Confirmar", danger = false }) {
+function askConfirmation({ title, message, acceptLabel = "Confirmar", danger = false, verificationText = "" }) {
   const dialog = $("#actionConfirmDialog");
   $("#confirmDialogTitle").textContent = title;
   $("#confirmDialogMessage").textContent = message;
   $("#confirmDialogAccept").textContent = acceptLabel;
   $("#confirmDialogAccept").className = `button ${danger ? "danger-button" : ""}`.trim();
   $("#confirmDialogIcon").className = `confirm-dialog-icon ${danger ? "danger" : ""}`.trim();
+  $("#confirmDialogVerification").hidden = !verificationText;
+  $("#confirmDialogInput").value = "";
+  $("#confirmDialogHint").textContent = verificationText ? `Digite: ${verificationText}` : "";
+  $("#confirmDialogError").textContent = "";
   dialog.showModal();
   return new Promise((resolve) => {
     const finish = (answer) => {
@@ -48,7 +52,13 @@ function askConfirmation({ title, message, acceptLabel = "Confirmar", danger = f
       dialog.oncancel = null;
       resolve(answer);
     };
-    $("#confirmDialogAccept").onclick = () => finish(true);
+    $("#confirmDialogAccept").onclick = () => {
+      if (verificationText && normalizeSearch($("#confirmDialogInput").value) !== normalizeSearch(verificationText)) {
+        $("#confirmDialogError").textContent = "O nome digitado não corresponde.";
+        return;
+      }
+      finish(verificationText ? $("#confirmDialogInput").value.trim() : true);
+    };
     $("#confirmDialogCancel").onclick = () => finish(false);
     dialog.oncancel = (event) => { event.preventDefault(); finish(false); };
   });
@@ -95,6 +105,7 @@ function render() {
     <div class="action-row">
       <button class="mini-button" data-edit-pool="${escapeHtml(pool.id)}">Editar</button>
       <button class="mini-button" data-pool-status="${escapeHtml(pool.id)}" data-next-status="${pool.status === "ABERTO" ? "ENCERRADO" : "ABERTO"}">${pool.status === "ABERTO" ? "Encerrar" : "Reabrir"}</button>
+      <button class="mini-button reject" data-delete-pool="${escapeHtml(pool.id)}">Excluir definitivamente</button>
     </div>
   </div>`).join("") : `<div class="empty-state">Nenhum bolão.</div>`;
 
@@ -128,8 +139,9 @@ function renderPayments(registrations = state.registrations.filter((item) => ite
     <td>${escapeHtml(item.pixName)}</td><td>${registrationLabel(item)}</td><td>${paymentLabel(item.paymentStatus)}</td>
     <td><div class="action-row">
       ${item.registrationStatus === "BLOQUEADO" ? `
-        <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="PENDENTE">Reabrir análise</button>` : `
+        <button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="${item.mode === "DIVERSAO" || item.paymentStatus === "CONFIRMADO" ? "APROVADO" : "PENDENTE"}">${item.mode === "DIVERSAO" || item.paymentStatus === "CONFIRMADO" ? "Restaurar participação" : "Reabrir análise"}</button>` : `
       ${item.mode === "DIVERSAO" && item.registrationStatus !== "APROVADO" ? `<button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Aprovar participação</button>` : ""}
+      ${item.mode === "PAGO" && item.paymentStatus === "CONFIRMADO" && item.registrationStatus !== "APROVADO" ? `<button class="mini-button confirm" data-registration="${escapeHtml(item.id)}" data-registration-status="APROVADO">Restaurar participação</button>` : ""}
       <button class="mini-button reject" data-registration="${escapeHtml(item.id)}" data-registration-status="BLOQUEADO">Bloquear</button>
       ${item.mode === "PAGO" && item.paymentStatus !== "CONFIRMADO" ? `
         <button class="mini-button confirm" data-payment="${escapeHtml(item.id)}" data-status="CONFIRMADO">Confirmar PIX recebido</button>
@@ -292,10 +304,33 @@ document.addEventListener("click", async (event) => {
   const editPoolButton = event.target.closest("[data-edit-pool]");
   const editMatchButton = event.target.closest("[data-edit-match]");
   const matchStatusButton = event.target.closest("[data-match-status]");
+  const deletePoolButton = event.target.closest("[data-delete-pool]");
   let restoreButton = () => {};
   try {
     if (editPoolButton) return startPoolEdit(editPoolButton.dataset.editPool);
     if (editMatchButton) return startMatchEdit(editMatchButton.dataset.editMatch);
+    if (deletePoolButton) {
+      const pool = state.pools.find((item) => item.id === deletePoolButton.dataset.deletePool);
+      if (!pool) return;
+      const relatedRegistrations = state.registrations.filter((item) => item.poolId === pool.id).length;
+      const relatedMatches = state.matches.filter((item) => item.poolId === pool.id).length;
+      const relatedGuesses = state.guesses.filter((item) => item.poolId === pool.id).length;
+      const confirmed = await askConfirmation({
+        title: "Excluir bolão definitivamente?",
+        message: `${pool.name} será apagado junto com ${relatedRegistrations} inscrição(ões), ${relatedMatches} jogo(s) e ${relatedGuesses} palpite(s). Esta ação não pode ser desfeita.`,
+        acceptLabel: "Excluir tudo",
+        danger: true,
+        verificationText: pool.name
+      });
+      if (!confirmed) return;
+      restoreButton = setButtonBusy(deletePoolButton);
+      const data = await apiPost({
+        action: "deletePool", pin: pin(), poolId: pool.id, confirmationName: confirmed
+      });
+      activePoolId = "";
+      showAdminFeedback(data.message || "Bolão excluído definitivamente.");
+      return loadAdmin();
+    }
     if (matchStatusButton) {
       const match = state.matches.find((item) => item.id === matchStatusButton.dataset.matchStatus);
       const isCancel = matchStatusButton.dataset.nextMatchStatus === "CANCELADO";
@@ -358,11 +393,11 @@ document.addEventListener("click", async (event) => {
       const isBlock = nextStatus === "BLOQUEADO";
       const isApprove = nextStatus === "APROVADO";
       const confirmed = await askConfirmation({
-        title: isBlock ? "Bloquear participante?" : isApprove ? "Aprovar participante?" : "Reabrir análise?",
+        title: isBlock ? "Bloquear participante?" : isApprove ? "Restaurar ou aprovar participante?" : "Reabrir análise?",
         message: isBlock
           ? `${registration?.name || "Participante"} ficará impedido de enviar novos palpites e continuará fora da exibição pública. O histórico não será apagado.`
           : isApprove
-            ? `${registration?.name || "Participante"} será incluído normalmente neste bolão.`
+            ? `${registration?.name || "Participante"} voltará a aparecer e participar normalmente neste bolão.`
             : `${registration?.name || "Participante"} voltará para análise, mas ainda não estará valendo prêmio.`,
         acceptLabel: isBlock ? "Bloquear participante" : isApprove ? "Aprovar participante" : "Reabrir análise",
         danger: isBlock

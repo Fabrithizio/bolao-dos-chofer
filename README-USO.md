@@ -78,6 +78,18 @@ O participante pago pode enviar palpites antes da confirmação, mas permanece f
 
 O painel pede uma confirmação antes das ações importantes, como confirmar ou recusar PIX, bloquear participante, cancelar jogo, encerrar bolão e publicar resultado. Depois da ação, uma mensagem colorida aparece na tela. Quando o PIX já está confirmado, os botões de confirmar e recusar deixam de aparecer.
 
+### Excluir um bolão de teste
+
+No painel, localize o bolão em **Bolões cadastrados** e clique em **Excluir definitivamente**. O sistema informa quantas inscrições, jogos e palpites serão apagados e exige que você digite o nome do bolão. A exclusão remove o bolão e todos os dados vinculados; não apague somente a linha da aba `Boloes`, pois isso deixaria dados soltos nas outras abas.
+
+### Quem aparece como participante
+
+- Inscrição gratuita: é aprovada automaticamente e aparece como participante.
+- Inscrição paga sem PIX confirmado: pode palpitar, mas fica em análise, fora das listas públicas e fora do prêmio.
+- Inscrição paga com PIX confirmado: aparece como participante e no ranking valendo prêmio.
+- Inscrição bloqueada: não aparece publicamente e não pode enviar palpites.
+- Ao restaurar alguém bloqueado, o sistema volta a aprovar automaticamente se a inscrição for gratuita ou se o PIX já estiver confirmado. Se o PIX ainda não estiver confirmado, volta para análise.
+
 O site mostra apenas o nome e a situação do pagamento. Não mostra chave PIX do participante, dados bancários ou comprovantes.
 
 A confirmação administrativa pode ser feita depois do prazo de inscrição. O importante é que a pessoa tenha se inscrito e enviado o pagamento dentro do prazo. O prazo impede novas inscrições, mas não impede o organizador de concluir a conferência depois.
