@@ -26,7 +26,7 @@ const API_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
 pela URL copiada, mantendo as aspas.
 
-Ao primeiro acesso, as abas `Boloes`, `Inscricoes`, `Jogos` e `Palpites` serão criadas automaticamente. Se as abas antigas já existirem, as novas colunas serão acrescentadas sem apagar dados.
+Ao primeiro acesso, as abas `Boloes`, `Inscricoes`, `Jogos`, `Palpites` e `Historico` serão criadas automaticamente. Se as abas antigas já existirem, as novas colunas serão acrescentadas sem apagar dados.
 
 ## 2. Testar no computador
 

@@ -7,6 +7,13 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => 
 })[char]);
 const money = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value || 0));
 const formatDate = (value) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Recife" }).format(new Date(value));
+function countdown(value) {
+  const remaining = new Date(value).getTime() - Date.now();
+  if (remaining <= 0) return "encerrado";
+  const days = Math.floor(remaining / 86400000);
+  const hours = Math.floor((remaining % 86400000) / 3600000);
+  return `${days ? `${days}d ` : ""}${hours}h`;
+}
 
 async function apiGet(poolId = "") {
   const url = new URL(API_URL);
@@ -55,7 +62,7 @@ function render(data) {
     <div><span>Fase</span><strong>${escapeHtml(pool.phase)}</strong></div>
     <div><span>Inscrição</span><strong>${money(pool.fee)}</strong></div>
     <div><span>Pagos confirmados</span><strong>${pool.confirmedPaid}</strong></div>
-    <div><span>Prazo</span><strong>${formatDate(pool.deadline)}</strong></div>`;
+    <div><span>Prazo</span><strong>${formatDate(pool.deadline)}</strong><small>Faltam ${countdown(pool.deadline)}</small></div>`;
   renderFilteredRankings();
   $("#participantList").innerHTML = (data.participants || []).length
     ? data.participants.map((item) => `<div class="participant-row"><strong>${escapeHtml(item.name)}</strong>${badge(item)}</div>`).join("")

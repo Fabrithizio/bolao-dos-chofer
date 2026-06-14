@@ -8,7 +8,7 @@
 <body>
   <header class="site-header"><nav class="nav">
     <a class="brand" href="index.html"><span class="brand-mark">BD</span> Bolão Dos Chofer</a>
-    <div class="nav-links"><a href="index.html">Participar</a><a href="ranking.html">Ranking</a><a class="active" href="admin.html">Admin</a></div>
+    <div class="nav-links"><a href="index.html">Participar</a><a href="ranking.html">Ranking</a><a href="regulamento.html">Regulamento</a><a class="active" href="admin.html">Admin</a></div>
   </nav></header>
   <main class="container">
     <section><p class="eyebrow">Área do organizador</p><h1>Painel administrativo</h1><p class="lead">Crie bolões por fase, confirme PIX, cadastre jogos e publique resultados.</p></section>
@@ -79,6 +79,13 @@
 
       <div class="section-heading"><div><p class="eyebrow">Correções</p><h2>Jogos cadastrados</h2></div></div>
       <div id="matchAdminList" class="match-list"></div>
+
+      <div class="section-heading"><div><p class="eyebrow">Segurança</p><h2>Backup e histórico</h2></div></div>
+      <section class="card">
+        <p class="muted">O backup CSV baixa uma cópia dos bolões, inscrições, jogos, palpites e pagamentos para seu computador.</p>
+        <button class="button" id="backupButton" type="button">Baixar backup CSV</button>
+        <div id="auditList" class="audit-list"></div>
+      </section>
 
       <div class="section-heading"><div><p class="eyebrow">Conferência e suporte</p><h2>Inscrições e pagamentos</h2></div></div>
       <div class="table-wrap"><table><thead><tr><th>Bolão</th><th>Nome da inscrição</th><th>Nome no PIX</th><th>Cadastro</th><th>Pagamento</th><th>Ação</th></tr></thead><tbody id="paymentBody"></tbody></table></div>

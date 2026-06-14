@@ -118,6 +118,25 @@ Na página de ranking, use o campo **Filtrar por participante** para localizar u
 
 Ao cadastrar um jogo, os campos Time A e Time B sugerem automaticamente seleções já usadas anteriormente. Você pode escolher a sugestão ou digitar um novo time.
 
+## Regulamento público
+
+A página `regulamento.html` apresenta pontuação, prazos, confirmação de PIX, desempates, prêmio e tratamento de jogos adiados ou cancelados. O link aparece no menu do site.
+
+Por padrão, o sistema informa que 100% do prêmio vai ao primeiro colocado. Caso o grupo decida outra divisão, anuncie no WhatsApp antes do primeiro jogo.
+
+## Histórico e backup
+
+O painel registra as principais ações na aba `Historico`, incluindo criação e edição de bolões, jogos, resultados, pagamentos, bloqueios e alterações de palpites.
+
+O botão **Baixar backup CSV** gera um arquivo no computador contendo bolões, inscrições, pagamentos, jogos e palpites. Esse arquivo:
+
+- serve como cópia de segurança;
+- pode ser aberto no Excel ou Google Planilhas;
+- ajuda a conferir dados se algo for apagado por engano;
+- não contém PIN administrativo nem PIN pessoal.
+
+Faça um backup antes do primeiro jogo de cada fase e depois de publicar o resultado final.
+
 ## Mandar o link para os motoristas
 
 Envie o link principal do GitHub Pages pelo WhatsApp:

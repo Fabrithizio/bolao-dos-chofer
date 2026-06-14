@@ -10,6 +10,14 @@ const money = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", cur
 const formatDate = (value) => new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short", timeStyle: "short", timeZone: "America/Recife"
 }).format(new Date(value));
+function countdown(value) {
+  const remaining = new Date(value).getTime() - Date.now();
+  if (remaining <= 0) return "encerrado";
+  const days = Math.floor(remaining / 86400000);
+  const hours = Math.floor((remaining % 86400000) / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  return `${days ? `${days}d ` : ""}${hours}h ${minutes}min`;
+}
 
 async function apiGet(action, params = {}) {
   const url = new URL(API_URL);
@@ -50,7 +58,7 @@ function renderPool() {
     <div><span>Fase</span><strong>${escapeHtml(pool.phase)}</strong></div>
     <div><span>Inscrição</span><strong>${pool.fee > 0 ? money(pool.fee) : "Grátis"}</strong></div>
     <div><span>Confirmados</span><strong>${pool.confirmedPaid}</strong></div>
-    <div><span>Prazo</span><strong>${formatDate(pool.deadline)}</strong></div>`;
+    <div><span>Prazo</span><strong>${formatDate(pool.deadline)}</strong><small>Faltam ${countdown(pool.deadline)}</small></div>`;
 
   $("#registrationForm").classList.toggle("disabled-form", !pool.registrationOpen);
   $("#registerButton").disabled = !pool.registrationOpen;
@@ -71,7 +79,7 @@ function renderPool() {
     ? `<strong>PIX: ${escapeHtml(pool.pixKey)}</strong><br>Valor: ${money(pool.fee)}<br>Titular: ${escapeHtml(pool.pixOwner)}<br><small>O pagamento será confirmado manualmente pelo organizador.</small>`
     : "Você participa do ranking geral, mas não concorre ao prêmio.";
 
-  const poolMatches = state.matches.filter((match) => match.poolId === pool.id);
+  const poolMatches = state.matches.filter((match) => match.poolId === pool.id && match.status !== "CANCELADO");
   const openMatches = poolMatches.filter((match) => match.isOpen);
   $("#matchId").innerHTML = openMatches.length
     ? `<option value="">Selecione uma partida</option>${openMatches.map((match) =>
@@ -83,7 +91,7 @@ function renderPool() {
     ? poolMatches.map((match) => `<article class="match-card">
         <span class="phase">${escapeHtml(match.fase)}</span>
         <div class="teams"><strong>${escapeHtml(match.timeA)}</strong><span>VS</span><strong>${escapeHtml(match.timeB)}</strong></div>
-        <div class="match-time">${match.hasResult ? `Resultado: ${match.resultA} x ${match.resultB}` : `Palpites até ${formatDate(match.dataHora)}`}</div>
+        <div class="match-time">${match.hasResult ? `Resultado: ${match.resultA} x ${match.resultB}` : `Palpites até ${formatDate(match.dataHora)} · faltam ${countdown(match.dataHora)}`}</div>
       </article>`).join("")
     : `<div class="empty-state">Os jogos ainda não foram cadastrados.</div>`;
 

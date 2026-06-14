@@ -377,7 +377,8 @@ select:focus {
 }
 
 .pool-summary span,
-.pool-summary strong {
+.pool-summary strong,
+.pool-summary small {
   display: block;
 }
 
@@ -389,6 +390,11 @@ select:focus {
 
 .pool-summary strong {
   color: var(--gold);
+}
+
+.pool-summary small {
+  margin-top: 4px;
+  color: var(--muted);
 }
 
 .notice {
@@ -518,6 +524,38 @@ select:focus {
 .filter-bar label {
   min-width: max-content;
   margin: 0;
+}
+
+.rules-grid {
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.rules-grid p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.audit-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.audit-row {
+  padding: 11px 13px;
+  display: grid;
+  grid-template-columns: 150px 190px 1fr;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.audit-row span,
+.audit-row small {
+  color: var(--muted);
 }
 
 .disabled-form {
@@ -763,6 +801,15 @@ tbody tr:hover {
 
   .inline-form {
     grid-template-columns: 1fr;
+  }
+
+  .rules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .inline-form .button {

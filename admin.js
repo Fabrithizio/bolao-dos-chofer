@@ -1,5 +1,5 @@
 "use strict";
-const state = { pools: [], matches: [], registrations: [], teams: [] };
+const state = { pools: [], matches: [], registrations: [], teams: [], guesses: [], audit: [] };
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -30,6 +30,7 @@ async function loadAdmin() {
     const data = await apiPost({ action: "adminData", pin: pin() });
     state.pools = data.pools || []; state.matches = data.matches || [];
     state.registrations = data.registrations || []; state.teams = data.teams || [];
+    state.guesses = data.guesses || []; state.audit = data.audit || [];
     $("#adminContent").hidden = false;
     setStatus($("#adminStatus"), "Painel liberado.", "success");
     render();
@@ -53,8 +54,9 @@ function render() {
   $("#matchAdminList").innerHTML = state.matches.length ? state.matches.map((match) => `<article class="match-card">
     <span class="phase">${escapeHtml(match.fase)}</span>
     <div class="teams"><strong>${escapeHtml(match.timeA)}</strong><span>VS</span><strong>${escapeHtml(match.timeB)}</strong></div>
-    <div class="match-card-footer"><span class="match-time">${formatDate(match.dataHora)}${match.hasResult ? ` · ${match.resultA} x ${match.resultB}` : ""}</span>
-    <button class="mini-button" data-edit-match="${escapeHtml(match.id)}" ${match.hasResult ? "disabled" : ""}>Editar</button></div>
+    <div class="match-card-footer"><span class="match-time">${formatDate(match.dataHora)}${match.hasResult ? ` · ${match.resultA} x ${match.resultB}` : match.status === "CANCELADO" ? " · CANCELADO" : ""}</span>
+    <div class="action-row"><button class="mini-button" data-edit-match="${escapeHtml(match.id)}" ${match.hasResult ? "disabled" : ""}>Editar</button>
+    ${!match.hasResult ? `<button class="mini-button ${match.status === "CANCELADO" ? "confirm" : "reject"}" data-match-status="${escapeHtml(match.id)}" data-next-match-status="${match.status === "CANCELADO" ? "ATIVO" : "CANCELADO"}">${match.status === "CANCELADO" ? "Reativar" : "Cancelar jogo"}</button>` : ""}</div></div>
   </article>`).join("") : `<div class="empty-state">Nenhum jogo cadastrado.</div>`;
 
   const poolMap = Object.fromEntries(state.pools.map((pool) => [pool.id, pool.name]));
@@ -69,6 +71,9 @@ function render() {
         <button class="mini-button reject" data-payment="${escapeHtml(item.id)}" data-status="RECUSADO">Recusar PIX</button>` : ""}
       <button class="mini-button" data-reset-pin="${escapeHtml(item.id)}">Novo PIN</button>
     </div></td></tr>`).join("") : `<tr><td colspan="6" class="empty-state">Nenhuma inscrição.</td></tr>`;
+  $("#auditList").innerHTML = state.audit.length ? state.audit.slice(0, 50).map((item) => `<div class="audit-row">
+    <span>${formatDate(item.dateTime)}</span><strong>${escapeHtml(item.action)}</strong><small>${escapeHtml(item.details)}</small>
+  </div>`).join("") : `<div class="empty-state">Nenhuma ação registrada.</div>`;
   updateResultLabels();
   updateMatchRuleNotice();
 }
@@ -126,6 +131,23 @@ $("#resultMatchId").addEventListener("change", updateResultLabels);
 $("#matchPoolId").addEventListener("change", updateMatchRuleNotice);
 $("#cancelPoolEdit").addEventListener("click", resetPoolForm);
 $("#cancelMatchEdit").addEventListener("click", resetMatchForm);
+$("#backupButton").addEventListener("click", downloadBackup);
+function csvCell(value) {
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+}
+function downloadBackup() {
+  const rows = [["tipo", "id", "bolao", "nome", "detalhe1", "detalhe2", "status"]];
+  state.pools.forEach((item) => rows.push(["BOLAO", item.id, item.name, item.phase, item.fee, item.deadline, item.status]));
+  state.registrations.forEach((item) => rows.push(["INSCRICAO", item.id, item.poolId, item.name, item.pixName, item.mode, `${item.registrationStatus}/${item.paymentStatus}`]));
+  state.matches.forEach((item) => rows.push(["JOGO", item.id, item.poolId, `${item.timeA} x ${item.timeB}`, item.dataHora, item.hasResult ? `${item.resultA} x ${item.resultB}` : "", item.status]));
+  state.guesses.forEach((item) => rows.push(["PALPITE", item.id, item.poolId, item.name, `${item.timeA} x ${item.timeB}`, `${item.guessA} x ${item.guessB}`, ""]));
+  const csv = "\ufeff" + rows.map((row) => row.map(csvCell).join(";")).join("\r\n");
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  link.download = `backup-bolao-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
 $("#poolForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
@@ -170,9 +192,17 @@ document.addEventListener("click", async (event) => {
   const registrationButton = event.target.closest("[data-registration]");
   const editPoolButton = event.target.closest("[data-edit-pool]");
   const editMatchButton = event.target.closest("[data-edit-match]");
+  const matchStatusButton = event.target.closest("[data-match-status]");
   try {
     if (editPoolButton) return startPoolEdit(editPoolButton.dataset.editPool);
     if (editMatchButton) return startMatchEdit(editMatchButton.dataset.editMatch);
+    if (matchStatusButton) {
+      await apiPost({
+        action: "setMatchStatus", pin: pin(), matchId: matchStatusButton.dataset.matchStatus,
+        status: matchStatusButton.dataset.nextMatchStatus
+      });
+      return loadAdmin();
+    }
     if (paymentButton) {
       await apiPost({ action: "confirmPayment", pin: pin(), registrationId: paymentButton.dataset.payment, status: paymentButton.dataset.status });
       await loadAdmin();
